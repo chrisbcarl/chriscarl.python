@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Carl, Chris
-Email:          chrisbcarl@outlook.com
+Author:         Chris Carl
+Email:          chrisbcarl@chriscarl.com
 Date:           2024-11-23
 Description:
 

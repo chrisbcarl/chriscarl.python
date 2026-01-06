@@ -9,6 +9,7 @@ Description:
 chriscarl.core.lib.stdlib.os unit test.
 
 Updates:
+    2026-01-06 - tests.chriscarl.core.lib.stdlib.os - added is_file, is_dir
     2024-11-26 - tests.chriscarl.core.lib.stdlib.os - initial commit
 '''
 
@@ -151,6 +152,22 @@ class TestCase(UnitTest):
                     ]
                     self.assert_null_hypothesis(variables, controls)
 
+    def test_case_6_easy(self):
+        if sys.platform == 'win32':
+            variables = [
+                (lib.is_file, (__file__), dict()),
+                (lib.is_dir, (SCRIPT_DIRPATH), dict()),
+                (lib.is_file, (__file__ + 'X'), dict()),
+                (lib.is_dir, (SCRIPT_DIRPATH + 'X'), dict()),
+            ]
+            controls = [
+                True,
+                True,
+                False,
+                False,
+            ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -162,5 +179,6 @@ if __name__ == '__main__':
     tc.test_case_3_drives()
     tc.test_case_4_as_posix()
     tc.test_case_5_as_posix_win32()
+    tc.test_case_6_easy()
 
     tc.tearDown()

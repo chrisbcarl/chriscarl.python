@@ -34,9 +34,11 @@
         "editor.formatOnSaveMode": "file",
         "editor.formatOnType": false,
     },
-    "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\scripts\\python.exe",
+    "python.defaultInterpreterPath": "${workspaceRoot}\\.venv\\scripts\\python.exe",
     // stubgen src\chriscarl -o dist/typing
     "python.analysis.stubPath": "${workspaceFolder}\\dist\\typing",
     "python.analysis.extraPaths": ["${workspaceFolder}\\src"],
     "python.REPL.sendToNativeREPL": false,
+    "python-envs.pythonProjects": [],
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
 }

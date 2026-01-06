@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2026-01-05 - tools.shed.dev - audit_cov uses python -m instead of pytest alone
     2024-12-20 - tools.shed.dev - audit_banned now includes the filename, lol
     2024-12-11 - tools.shed.dev - audit_stubgen modified to make use of ast analysis and merging
                  tools.shed.dev - added pytest actual results to audit cov
@@ -45,7 +46,7 @@ from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 import chriscarl
 from chriscarl.core.constants import DATE, REPO_DIRPATH
 from chriscarl.core.functors.python import run_func_args_kwargs, get_legal_python_name
-from chriscarl.core.functors.parse import PytestCoverage
+from chriscarl.core.functors.parse.pytest_coverage import PytestCoverage
 from chriscarl.core.lib.stdlib.ast import merge_python
 from chriscarl.core.lib.stdlib.io import read_text_file, write_text_file
 from chriscarl.core.lib.stdlib.json import read_json
@@ -615,11 +616,13 @@ def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='te
     Description:
         run pytest coverage and call out anything below a certain threshold
         modeled after this command which can be run at any time:
-            pytest --cov=chriscarl tests --cov-report term-missing
-            pytest --cov=chriscarl.core.types tests/chriscarl/core/types --cov-report term-missing
+            python -m pytest --cov=chriscarl tests --cov-report term-missing
+            python -m pytest --cov=chriscarl.core.types tests/chriscarl/core/types --cov-report term-missing
+        WARNING: sometimes running just pytest gives you "Fatal error in launcher: Unable to create process using"
+            solve with python -m
     '''
     with chdir(dirpath):
-        cmd = ['pytest', '--cov={}'.format(module), '{}/'.format(tests_dirname), '--cov-report', 'term-missing']
+        cmd = ['python', '-m', 'pytest', '--cov={}'.format(module), '{}/'.format(tests_dirname), '--cov-report', 'term-missing']
         _, output = run(cmd, cwd=dirpath)
 
     for line in output.splitlines():
@@ -642,6 +645,6 @@ def audit_cov(dirpath=REPO_DIRPATH, module=chriscarl.__name__, tests_dirname='te
         for filepath, lineno, exc in failed:
             LOGGER.error('"%s", line %d w/ %r', filepath, lineno, exc)
     else:
-        LOGGER.info('at least none failed outright!')
+        LOGGER.info('0 items outright failed!')
 
     return len(below)

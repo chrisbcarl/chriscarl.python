@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-01-06 - core.lib.stdlib.os - added is_file, is_dir
     2024-12-04 - core.lib.stdlib.os - added as_posix
     2024-11-27 - core.lib.stdlib.os - added walk
     2024-11-26 - core.lib.stdlib.os - added chdir context manager
@@ -157,3 +158,11 @@ def as_posix(path, wsl=False):
         return path.replace('\\', '/')
 
     return path.replace('\\', '/')
+
+
+def is_file(*paths):
+    return os.path.isfile(abspath(*paths))
+
+
+def is_dir(*paths):
+    return os.path.isdir(abspath(*paths))

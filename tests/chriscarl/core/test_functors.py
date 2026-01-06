@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Chris Carl
-Email:          chrisbcarl@outlook.com
-Date:           2024-11-29
+Author:         
+Email:          
+Date:           2026-01-06
 Description:
 
 chriscarl.core.functors unit test.
 
 Updates:
-    2024-11-29 - tests.chriscarl.core.functors - initial commit
+    2026-01-06 - tests.chriscarl.core.functors - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -22,6 +22,8 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
+from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports

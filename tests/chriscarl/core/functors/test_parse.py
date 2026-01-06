@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         Chris Carl
-Email:          chrisbcarl@outlook.com
-Date:           2024-11-29
+Author:         
+Email:          
+Date:           2026-01-06
 Description:
 
 chriscarl.core.functors.parse unit test.
 
 Updates:
-    2024-11-29 - tests.chriscarl.core.functors.parse - initial commit
+    2026-01-06 - tests.chriscarl.core.functors.parse - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -23,9 +23,8 @@ import unittest
 
 # project imports (expected to work)
 from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
-from chriscarl.core.lib.stdlib.unittest import UnitTest
-from chriscarl.core.lib.stdlib.io import read_text_file
 from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.functors.parse as lib
@@ -50,21 +49,15 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    def test_case_0_PytestCoverage(self):
-        pytest_coverage_text = read_text_file(abspath(TEST_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
-        pytest_coverages = lib.PytestCoverage.parse_coverage(pytest_coverage_text)
-        for pytest_coverage in pytest_coverages:
-            LOGGER.debug(pytest_coverage)
-        self.assertGreater(len(pytest_coverages), 0)
-
+    @unittest.skip('lorem ipsum')
+    def test_case_0(self):
         variables = [
-            (lib.PytestCoverage.parse_tests, pytest_coverage_text),
+            (sum, [0, 1, 2, 3]),
+            (sum, [0, 1, 2, 3]),
         ]
         controls = [
-            [
-                ('tests\\chriscarl\\tools\\shed\\test_dev.py', 70, 'AssertionError'),
-                ('tests\\chriscarl\\tools\\shed\\test_dev.py', 113, 'AssertionError'),
-            ],
+            6,
+            6,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -73,6 +66,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_PytestCoverage()
+    tc.test_case_0()
 
     tc.tearDown()
