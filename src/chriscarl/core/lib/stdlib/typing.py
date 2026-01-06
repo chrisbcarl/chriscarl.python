@@ -19,6 +19,7 @@ import os
 import sys
 import inspect
 import logging
+# TODO: _AnyMeta breaks on 3.9 and 3.10...
 from typing import (  # type: ignore
     Any, List, Literal, Iterable, Union, _AnyMeta, _UnionGenericAlias, _GenericAlias,
 )
