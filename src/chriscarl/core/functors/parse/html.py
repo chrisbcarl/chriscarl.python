@@ -10,6 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-06 - core.functors.parse.html - BUG: fixed where it would omit large portions of the html, turns out the logic was missing the sibling, the else was important
     2026-01-06 - core.functors.parse.html - initial commit
 '''
 
@@ -142,25 +143,33 @@ class HtmlNestedParser(HTMLParser):
         # type: (str) -> None
         stack = self.stack = []
         super().feed(data)
+        # import pprint
         # pprint.pprint(stack, indent=4, width=160)
         tag = ''
-        node = Node(tag='', children=[], attrs={}, data='', parent=None)
+        root = node = Node(tag='', children=[], attrs={}, data='', parent=None)
         while stack:
             meta, data = stack.pop(-1)
             if meta == 'start':
+                new = Node(tag=data, children=[], attrs={}, data='', parent=node)
                 if data != tag:
-                    new = Node(tag=data, children=[], attrs={}, data='', parent=node)
+                    # we're nesting
                     node.children.append(new)
+                    node = new
+                    tag = data
+                else:
+                    # we're sibling
+                    node.parent.children.append(new)
                     node = new
             elif meta == 'attrs':
                 node.attrs = data
             elif meta == 'data':
                 node.data += data
             elif meta == 'end':
-                node = node.parent
+                if node:
+                    node = node.parent
 
         # remaining node is the root
-        dom = Dom(node.children)
+        dom = Dom(root.children)
         return dom
 
     def handle_data(self, data):

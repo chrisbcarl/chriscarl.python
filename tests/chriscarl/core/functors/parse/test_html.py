@@ -46,11 +46,14 @@ class TestCase(UnitTest):
     def setUp(self):
         self.flat_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'flat.html')
         self.index_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'index.html')
+        self.typical_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'typical.html')
 
         with open(self.flat_filepath, 'r', encoding='utf-8') as r:
             self.flat = r.read()
         with open(self.index_filepath, 'r', encoding='utf-8') as r:
             self.index = r.read()
+        with open(self.typical_filepath, 'r', encoding='utf-8') as r:
+            self.typical = r.read()
         return super().setUp()
 
     def tearDown(self):
@@ -93,7 +96,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_2_parse_flat(self):
+    def test_case_2_parse_index(self):
         parser = lib.HtmlNestedParser()
         dom = parser.feed(self.index)
         ided = dom.get_element_by_id('id1')
@@ -129,6 +132,19 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3_parse_typical(self):
+        dom = lib.html_to_dom(self.typical)
+        anchors = dom.get_elements_by_tag('a')
+        print(anchors)
+
+        variables = [
+            (len, (anchors)),
+        ]
+        controls = [
+            21,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -136,6 +152,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_parse_ez()
     tc.test_case_1_parse_flat()
-    tc.test_case_2_parse_flat()
+    tc.test_case_2_parse_index()
 
     tc.tearDown()
