@@ -1,25 +1,32 @@
-[tool.poetry]
+[project]
 name = "chriscarl"
 version = "0.0.0"
 description = "Project that contains my everything--algorithms, data structures, tools, methodologies, tips, tricks, snippets, templates, code gen, etc."
-authors = ["Chris Carl <chrisbcarl@outlook.com>"]
+authors = [{name = "Chris Carl", email = "chrisbcarl@outlook.com"}]
 readme = "README.md"
-package-mode = true
-packages = [{include = "chriscarl", from = "src"}]
-include = [
-    { path = "tests", format = "sdist" },
-    # it seems to include all files that are in the packages include section without the need to specify
-]
-repository = "https://github.com/chrisbcarl/chriscarl-python"
 classifiers = [
     "Programming Language :: Python",
     "Development Status :: 2 - Pre-Alpha",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
+requires-python = "^3.12,<3.14"
+
+
+[tool.poetry]
+package-mode = true
+packages = [
+    # https://python-poetry.org/docs/pyproject/#packages
+    {include = "chriscarl", from = "src"}
+]
+include = [
+    { path = "tests", format = "sdist" },
+    # it seems to include all files that are in the packages include section without the need to specify
+]
+repository = "https://github.com/chrisbcarl/chriscarl.python"
 
 
 [tool.poetry.urls]
-changelog = "https://github.com/chrisbcarl/chriscarl-python/blob/main/CHANGELOG.md"
+changelog = "https://github.com/chrisbcarl/chriscarl.python/blob/main/CHANGELOG.md"
 homepage = "https://example.com"
 documentation = "https://readthedocs.org"
 "bug tracker" = "https://github.com/me/spam/issues"
@@ -30,7 +37,6 @@ dev = 'chriscarl.tools.dev:main'
 
 
 [tool.poetry.dependencies]
-python = "^3.12,<3.14"
 six = "^1.16.0"
 mypy = "^1.13.0"
 tomli = { version = "^2.0.1", python = "<3.11" }

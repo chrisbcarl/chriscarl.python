@@ -10,6 +10,7 @@ core.constants are useful to have actual constants
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-07 - core.constants - updated to deal with change to namespace rather than regular module.
     2024-11-22 - core.constants - initial commit
 '''
 
@@ -23,7 +24,6 @@ import datetime
 # third party imports
 
 # project imports
-import chriscarl
 
 SCRIPT_RELPATH = 'chriscarl/core/constants.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -36,7 +36,9 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-MODULE_DIRPATH = os.path.abspath(os.path.dirname(chriscarl.__file__))
+# MODULE_DIRPATH = os.path.abspath(os.path.dirname(chriscarl.__file__))
+# cannot do this because chriscarl is now a namespace, not a regular module
+MODULE_DIRPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 PYPA_SRC_DIRPATH = os.path.join(MODULE_DIRPATH, '../')
 REPO_DIRPATH = os.path.join(PYPA_SRC_DIRPATH, '../')
 TESTS_DIRPATH = os.path.join(REPO_DIRPATH, 'tests')

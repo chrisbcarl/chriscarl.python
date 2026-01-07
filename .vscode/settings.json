@@ -10,6 +10,7 @@
         "**/*py*cache*": true,  // covers ./.pytest_cache and __pycache__
         "**/*.venv*": true,
     },
+    "files.eol": "\n",
     // extensions //
     // mypy extension
     "mypy-type-checker.args": [

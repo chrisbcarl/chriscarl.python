@@ -141,7 +141,7 @@ class TestCase(UnitTest):
             (len, (anchors)),
         ]
         controls = [
-            21,
+            25,
         ]
         self.assert_null_hypothesis(variables, controls)
 

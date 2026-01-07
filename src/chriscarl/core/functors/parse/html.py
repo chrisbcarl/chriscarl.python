@@ -10,6 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-07 - core.functors.parse.html - quality of life functions added to classes
     2026-01-06 - core.functors.parse.html - BUG: fixed where it would omit large portions of the html, turns out the logic was missing the sibling, the else was important
     2026-01-06 - core.functors.parse.html - initial commit
 '''
@@ -19,7 +20,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from html.parser import HTMLParser
+from html.parser import HTMLParser as _HTMLParser
 # from html.entities import name2codepoint
 
 # third party imports
@@ -80,6 +81,11 @@ class Dom():
     classes = {}
     tags = {}
 
+    @classmethod
+    def from_html(cls, html, encoding='utf-8'):
+        # type: (str, str) -> Dom
+        return html_to_dom(html, encoding=encoding)
+
     def __init__(self, nodes):
         self.nodes = nodes
         self.ids = {}
@@ -135,9 +141,13 @@ class Dom():
         return self.tags.get(tag, [])
 
 
-class HtmlNestedParser(HTMLParser):
+class HtmlNestedParser(_HTMLParser):
     # https://docs.python.org/3/library/html.parser.html
     stack = []
+
+    def parse(self, html, encoding='utf-8'):
+        # type: (str, str) -> Dom
+        return html_to_dom(html, encoding=encoding)
 
     def feed(self, data):
         # type: (str) -> None
