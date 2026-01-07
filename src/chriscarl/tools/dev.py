@@ -9,6 +9,7 @@ Description:
 Tool that is used to do lots of "dev" related things like git pushing, versioning, publishing, templating, conforming, etc.
 
 Updates:
+    2026-01-07 - tools.dev - --namespace alone does the deed
     2024-12-28 - tools.dev - adopted logging.configure_ez
     2024-11-29 - tools.dev - added stubs, clean, and test
     2024-11-26 - tools.dev - moved code away from here and into tools.lib.dev
@@ -152,7 +153,7 @@ class Create(Mode):
                 - src/chriscarl/tools/fib.py
                 - tests/chriscarl/test_tools.py
                 - tests/chriscarl/tools/test_fib.py
-        - dev create tools.clock --tool --namespace tools
+        - dev create tools.clock --tool --namespace
             # create this module as a namespace with --namespace in common with other namespace projects
                 - DELETE: src/chriscarl/__init__.py
                 - DELETE: src/chriscarl/tools/__init__.py
@@ -166,7 +167,7 @@ class Create(Mode):
     tool: bool = False
     no_test: bool = False
     no_module: bool = False
-    namespace: str = ''
+    namespace: bool = False
 
     @classmethod
     def argparser(cls, subparser_root=None):
@@ -179,7 +180,7 @@ class Create(Mode):
         mode.add_argument('--tool', '-t', action='store_true', help='make a tool out of this rather than a module (it still gets tests)')
         mode.add_argument('--no-test', '-n', action='store_true', help='do not generate the test')
         mode.add_argument('--no-module', action='store_true', help='do not generate the modules')
-        mode.add_argument('--namespace', type=str, help='clear any __init__.py files in the namespace paths')
+        mode.add_argument('--namespace', action='store_true', help='clear any __init__.py files in the namespace path up to the final token')
         Mode.add_common_arguments(mode)
 
         return mode

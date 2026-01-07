@@ -84,10 +84,10 @@ def create_modules_and_tests(
     tool=False,
     no_test=False,
     no_module=False,
-    namespace='',
+    namespace=False,
     launch=False,
 ):
-    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool, str, bool) -> List[Tuple[str, str, str]]
+    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool, bool, bool) -> List[Tuple[str, str, str]]
     with chdir(cwd):
         descriptions = descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON)
         module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
@@ -95,8 +95,7 @@ def create_modules_and_tests(
         tool_template = read_text_file(manifest.FILEPATH_TOOL_TEMPLATE)
         mod_lib_template = read_text_file(manifest.FILEPATH_MOD_LIB_TEMPLATE)
         created_type_module_filepaths: List[Tuple[str, str, str]] = []
-        if namespace:
-            namespace = '{}.{}'.format(root_module, namespace)
+        namespaced_module = ''
         src_dirname = 'src'
         warnings = 0
         for m, module in enumerate(modules):
@@ -105,6 +104,8 @@ def create_modules_and_tests(
 
         for m, module in enumerate(modules):
             tokens = [root_module] + module.split('.')  # ['module', 'a', 'b']
+            if namespace:
+                namespaced_module = '.'.join(tokens[:-1])
 
             if no_module:
                 LOGGER.warning('skipping module generation!')
@@ -137,17 +138,17 @@ def create_modules_and_tests(
                     directory = '{}/{}'.format(src_dirname, '/'.join(tokens[:t + 1]))
                     module_so_far = '.'.join(tokens[:t + 1])
                     current_init_relpath = '{}/__init__.py'.format(directory)
-                    if namespace and module_so_far in namespace:
+                    if namespaced_module and module_so_far in namespaced_module:
                         doit = True
                         if os.path.isfile(current_init_relpath):
-                            LOGGER.warning(
-                                'module %d / %d - %s - step 2 - __init__.py from %r - "%s" exists! It should be removed as per namespace %r', m,
-                                len(modules) - 1, module, token, current_init_relpath, namespace
+                            LOGGER.error(
+                                'module %d / %d - %s - step 2 - __init__.py from %r - "%s" exists! remove namespace %r with --force!', m,
+                                len(modules) - 1, module, token, current_init_relpath, namespaced_module
                             )
                             if force:
                                 LOGGER.critical(
                                     'module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists! FORCING REMOVAL to conform to namespace %r!', m,
-                                    len(modules) - 1, module, token, current_init_relpath, namespace
+                                    len(modules) - 1, module, token, current_init_relpath, namespaced_module
                                 )
                             else:
                                 doit = False
@@ -252,17 +253,17 @@ def create_modules_and_tests(
                     module_so_far = '.'.join(tokens[:t + 1])
                     test_relpath = '{}/test_{}.py'.format(current_directory, token)
                     # test_relpath = '{}/test_{}.py'.format(tests_base, module_so_far)
-                    if namespace and module_so_far in namespace:
+                    if namespaced_module and module_so_far in namespaced_module:
                         doit = True
                         if os.path.isfile(test_relpath):
-                            LOGGER.warning(
-                                'module %d / %d - %s - step 5 - tests from %r - "%s" exists! It should be removed as per namespace %r', m,
-                                len(modules) - 1, module, token, current_init_relpath, namespace
+                            LOGGER.error(
+                                'module %d / %d - %s - step 5 - tests from %r - "%s" exists! remove namespace %r with --force!', m,
+                                len(modules) - 1, module, token, current_init_relpath, namespaced_module
                             )
                             if force:
                                 LOGGER.critical(
                                     'module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING REMOVAL to conform to namespace %r!', m,
-                                    len(modules) - 1, module, token, current_init_relpath, namespace
+                                    len(modules) - 1, module, token, current_init_relpath, namespaced_module
                                 )
                             else:
                                 doit = False
