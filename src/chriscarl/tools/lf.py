@@ -20,6 +20,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from argparse import ArgumentParser
+from typing import List
 
 # third party imports
 
@@ -44,6 +45,7 @@ LOGGER.addHandler(logging.NullHandler())
 # argument defaults
 DEFAULT_FIB_INIT = [0, 1]
 DEFAULT_LOG_FILEPATH = abspath(TEMP_DIRPATH, 'tool.log')
+DEFAULT_IGNORE = ['collateral']
 DEFAULT_THRESHOLD = 0.95
 
 # tool constants
@@ -57,6 +59,7 @@ class Arguments:
     dirpath: str = ''
     binary: bool = False
     threshold: float = DEFAULT_THRESHOLD
+    ignore: List[str] = field(default_factory=lambda: DEFAULT_IGNORE)
     debug: bool = False
     log_level: str = 'INFO'
     log_filepath: str = DEFAULT_LOG_FILEPATH
@@ -69,6 +72,7 @@ class Arguments:
         app.add_argument('dirpath', type=str, help='where to recurse on?')
         app.add_argument('--binary', action='store_true', help='look for occurances of the BYTES CRLF rather than than the unicode. much more dangerous')
         app.add_argument('--threshold', type=float, default=DEFAULT_THRESHOLD, help='chose to print debug info')
+        app.add_argument('--ignore', type=str, nargs='*', default=DEFAULT_IGNORE, help='more dirs to ignore in addition to the usual')
 
         misc = parser.add_argument_group('misc')
         misc.add_argument('--debug', action='store_true', help='chose to print debug info')
@@ -100,34 +104,45 @@ def main():
     args = Arguments.from_argparser(parser)
     args.dirpath = abspath(args.dirpath)
 
+    LOGGER.info('starting')
+    filepaths = []
     for dirpath, _, filenames in os.walk(args.dirpath):
         dirtokens = dirpath.split(os.sep)
-        if any(token in IGNORED_DIRS for token in dirtokens):
+        if any(token in IGNORED_DIRS + args.ignore for token in dirtokens):
             continue
         for filename in filenames:
             filepath = abspath(dirpath, filename)
-            if args.binary:
-                raise NotImplementedError('havent tried yet...')
-                with open(filepath, 'rb') as rb:
+            filepaths.append(filepath)
+    replacements = 0
+    for f, filepath in enumerate(filepaths):
+        if (f + 1 % 100) == 0:
+            LOGGER.info('%0.2f%%', f / len(filepaths))
+        if args.binary:
+            raise NotImplementedError('havent tried yet...')
+            with open(filepath, 'rb') as rb:
+                content = r.read()
+            # i = len(content) - 1
+            # while i > 0:
+            #     if content[i] == bytes('\n') and content[i - 1] == bytes('\n'):
+            #         # get rid of that byte, etc.
+        else:
+            try:
+                with open(filepath, 'r', encoding='utf-8') as r:
                     content = r.read()
-                # i = len(content) - 1
-                # while i > 0:
-                #     if content[i] == bytes('\n') and content[i - 1] == bytes('\n'):
-                #         # get rid of that byte, etc.
-            else:
-                try:
-                    with open(filepath, 'r', encoding='utf-8') as r:
-                        content = r.read()
-                    chars = len(content)
-                    if chars == 0:
-                        continue
-                    # unichars = len([ord(char) > 255 for char in content])
-                    # if unichars / chars > args.threshold:
-                    with open(filepath, 'w', encoding='utf-8') as w:
-                        w.write(content.replace('\r\n', '\n'))
-                except UnicodeDecodeError:
+                chars = len(content)
+                if chars == 0:
                     continue
+                # unichars = len([ord(char) > 255 for char in content])
+                # if unichars / chars > args.threshold:
+                LOGGER.debug(filepath)
+                with open(filepath, 'w', encoding='utf-8') as w:
+                    w.write(content.replace('\r\n', '\n'))
 
+                replacements += 1
+            except UnicodeDecodeError:
+                continue
+
+    LOGGER.info('made replacements in %d files!', replacements)
     return 0
 
 
