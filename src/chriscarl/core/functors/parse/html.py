@@ -10,7 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
-    2026-01-07 - core.functors.parse.html - quality of life functions added to classes
+    2026-01-07 - core.functors.parse.html - quality of life functions added to classes, get_attr
     2026-01-06 - core.functors.parse.html - BUG: fixed where it would omit large portions of the html, turns out the logic was missing the sibling, the else was important
     2026-01-06 - core.functors.parse.html - initial commit
 '''
@@ -22,6 +22,7 @@ import sys
 import logging
 from html.parser import HTMLParser as _HTMLParser
 # from html.entities import name2codepoint
+from typing import Callable
 
 # third party imports
 
@@ -96,11 +97,18 @@ class Dom():
     def to_string(self):
         return '\n'.join(node.to_string(depth=0) for node in self.nodes)
 
-    def discover(self):
+    def iterate_level_order(self, functor):
+        # type: (Callable[[Node], None]) -> None
         queue = list(self.nodes)
         while queue:
             node = queue.pop(0)
+            functor(node)
+            for child in node.children:
+                queue.append(child)
 
+    def discover(self):
+
+        def discover_node(node):
             if node.tag not in self.tags:
                 self.tags[node.tag] = []
             self.tags[node.tag].append(node)
@@ -116,8 +124,7 @@ class Dom():
                             self.classes[classs] = []
                         self.classes[classs].append(node)
 
-            for child in node.children:
-                queue.append(child)
+        self.iterate_level_order(discover_node)
 
     def get_element_by_id(self, id_, default=None):
         return self.ids.get(id_, default)
@@ -139,6 +146,11 @@ class Dom():
 
     def get_elements_by_tag(self, tag):
         return self.tags.get(tag, [])
+
+    def get_attr(self, attr, default=None):
+        lst = []
+        self.iterate_level_order(lambda node: lst.append(node.attrs.get(attr, default)))
+        return [ele for ele in lst if ele]
 
 
 class HtmlNestedParser(_HTMLParser):

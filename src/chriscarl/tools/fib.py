@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         {author}
-Email:          {email}
-Date:           {date}
+Author:         Chris Carl
+Email:          chrisbcarl@outlook.com
+Date:           2026-01-07
 Description:
 
-{module_dot_path} is a tool which... TODO: lorem ipsum
+tools.fib is a tool which... TODO: lorem ipsum
 
 Updates:
-    {date} - {module_dot_path} - initial commit
+    2026-01-07 - tools.fib - initial commit
 '''
 
 # stdlib imports
@@ -29,7 +29,7 @@ from chriscarl.core.lib.stdlib.logging import NAME_TO_LEVEL, configure_ez
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
 from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
 
-SCRIPT_RELPATH = '{script_relpath}'
+SCRIPT_RELPATH = 'chriscarl/tools/fib.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

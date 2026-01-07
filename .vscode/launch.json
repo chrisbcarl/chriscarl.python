@@ -49,5 +49,18 @@
                 "DEBUG",
             ]
         },
+        {
+            "name": "[tools] - lf",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/chriscarl/tools/lf.py",
+            "console": "integratedTerminal",
+            "args": [
+                "./",
+                //
+                "--log-level",
+                "DEBUG",
+            ]
+        },
     ]
 }

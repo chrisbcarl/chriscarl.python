@@ -34,6 +34,8 @@ documentation = "https://readthedocs.org"
 
 [tool.poetry.scripts]
 dev = 'chriscarl.tools.dev:main'
+fib = 'chriscarl.tools.fib:main'
+lf = 'chriscarl.tools.lf:main'
 
 
 [tool.poetry.dependencies]

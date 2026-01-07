@@ -135,13 +135,27 @@ class TestCase(UnitTest):
     def test_case_3_parse_typical(self):
         dom = lib.html_to_dom(self.typical)
         anchors = dom.get_elements_by_tag('a')
-        print(anchors)
 
         variables = [
             (len, (anchors)),
         ]
         controls = [
             25,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_4_get_attr(self):
+        dom = lib.html_to_dom(self.index)
+
+        variables = [
+            (dom.get_attr, ('href')),
+            (dom.get_attr, ('id')),
+            (set, dom.get_attr('class')),
+        ]
+        controls = [
+            ['https://iana.org/domains/example'],
+            ['id1'],
+            set(['hidden also-visible', 'hidden']),
         ]
         self.assert_null_hypothesis(variables, controls)
 

@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2026-01-07 - tools.shed.dev - create_modules_and_tests added namespace so that __init__ doesnt get added and related tests are removed
     2026-01-05 - tools.shed.dev - audit_cov uses python -m instead of pytest alone
     2024-12-20 - tools.shed.dev - audit_banned now includes the filename, lol
     2024-12-11 - tools.shed.dev - audit_stubgen modified to make use of ast analysis and merging
@@ -55,6 +56,7 @@ from chriscarl.core.lib.stdlib.importlib import walk_dirpath_for_module_files
 from chriscarl.core.lib.stdlib.re import find_lineno_colno
 from chriscarl.core.lib.stdlib.subprocess import run, launch_editor
 from chriscarl.files import manifest
+from chriscarl.tools.shed.constants import IGNORED_DIRS
 
 SCRIPT_RELPATH = 'chriscarl/tools/shed/dev.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -71,9 +73,21 @@ STUB_OUTPUT_DIRPATH = 'dist/typing'
 
 
 def create_modules_and_tests(
-    root_module, modules, descriptions=None, author='', email='', tests_dirname='tests', cwd=os.getcwd(), force=False, tool=False, no_test=False, no_module=False, launch=False
+    root_module,
+    modules,
+    descriptions=None,
+    author='',
+    email='',
+    tests_dirname='tests',
+    cwd=os.getcwd(),
+    force=False,
+    tool=False,
+    no_test=False,
+    no_module=False,
+    namespace='',
+    launch=False,
 ):
-    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool, bool) -> List[Tuple[str, str, str]]
+    # type: (str, List[str], Optional[dict], str, str, str, str, bool, bool, bool, bool, str, bool) -> List[Tuple[str, str, str]]
     with chdir(cwd):
         descriptions = descriptions or read_json(manifest.FILEPATH_DEFAULT_DESCRIPTIONS_JSON)
         module_template = read_text_file(manifest.FILEPATH_TEMPLATE)
@@ -81,6 +95,8 @@ def create_modules_and_tests(
         tool_template = read_text_file(manifest.FILEPATH_TOOL_TEMPLATE)
         mod_lib_template = read_text_file(manifest.FILEPATH_MOD_LIB_TEMPLATE)
         created_type_module_filepaths: List[Tuple[str, str, str]] = []
+        if namespace:
+            namespace = '{}.{}'.format(root_module, namespace)
         src_dirname = 'src'
         warnings = 0
         for m, module in enumerate(modules):
@@ -121,22 +137,44 @@ def create_modules_and_tests(
                     directory = '{}/{}'.format(src_dirname, '/'.join(tokens[:t + 1]))
                     module_so_far = '.'.join(tokens[:t + 1])
                     current_init_relpath = '{}/__init__.py'.format(directory)
-                    LOGGER.info('module %d / %d - %s - step 2 - __init__.py from %r - "%s"', m, len(modules) - 1, module, token, current_init_relpath)
-                    doit = True
-                    if os.path.isfile(current_init_relpath):
-                        LOGGER.warning('module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists!', m, len(modules) - 1, module, token, current_init_relpath)
-                        if force:
-                            LOGGER.critical(
-                                'module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists! FORCING!', m,
-                                len(modules) - 1, module, token, current_init_relpath
+                    if namespace and module_so_far in namespace:
+                        doit = True
+                        if os.path.isfile(current_init_relpath):
+                            LOGGER.warning(
+                                'module %d / %d - %s - step 2 - __init__.py from %r - "%s" exists! It should be removed as per namespace %r', m,
+                                len(modules) - 1, module, token, current_init_relpath, namespace
                             )
+                            if force:
+                                LOGGER.critical(
+                                    'module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists! FORCING REMOVAL to conform to namespace %r!', m,
+                                    len(modules) - 1, module, token, current_init_relpath, namespace
+                                )
+                            else:
+                                doit = False
+                                warnings += 1
+                                continue
                         else:
                             doit = False
-                            warnings += 1
-                            continue
-                    if doit:
-                        write_text_file(current_init_relpath, '')
-                        created_type_module_filepaths.append(('__init__', module_so_far, abspath(current_init_relpath)))
+                        if doit:
+                            os.remove(current_init_relpath)
+
+                    else:
+                        LOGGER.info('module %d / %d - %s - step 2 - __init__.py from %r - "%s"', m, len(modules) - 1, module, token, current_init_relpath)
+                        doit = True
+                        if os.path.isfile(current_init_relpath):
+                            LOGGER.warning('module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists!', m, len(modules) - 1, module, token, current_init_relpath)
+                            if force:
+                                LOGGER.critical(
+                                    'module %d / %d - %s - step 2 - __init__.py from %r - "%s" already exists! FORCING!', m,
+                                    len(modules) - 1, module, token, current_init_relpath
+                                )
+                            else:
+                                doit = False
+                                warnings += 1
+                                continue
+                        if doit:
+                            write_text_file(current_init_relpath, '')
+                            created_type_module_filepaths.append(('__init__', module_so_far, abspath(current_init_relpath)))
 
                 # create module file
                 module_relpath = '{}/{}.py'.format(src_dirname, '/'.join(tokens))
@@ -214,28 +252,49 @@ def create_modules_and_tests(
                     module_so_far = '.'.join(tokens[:t + 1])
                     test_relpath = '{}/test_{}.py'.format(current_directory, token)
                     # test_relpath = '{}/test_{}.py'.format(tests_base, module_so_far)
-                    LOGGER.info('module %d / %d - %s - step 5 - tests from %r - "%s"!', m, len(modules) - 1, module, token, test_relpath)
-                    doit = True
-                    if os.path.isfile(test_relpath):
-                        LOGGER.warning('module %d / %d - %s - step 5 - tests from %r - "%s" already exists!', m, len(modules) - 1, module, token, test_relpath)
-                        if force:
-                            LOGGER.critical('module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING!', m, len(modules) - 1, module, token, test_relpath)
+                    if namespace and module_so_far in namespace:
+                        doit = True
+                        if os.path.isfile(test_relpath):
+                            LOGGER.warning(
+                                'module %d / %d - %s - step 5 - tests from %r - "%s" exists! It should be removed as per namespace %r', m,
+                                len(modules) - 1, module, token, current_init_relpath, namespace
+                            )
+                            if force:
+                                LOGGER.critical(
+                                    'module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING REMOVAL to conform to namespace %r!', m,
+                                    len(modules) - 1, module, token, current_init_relpath, namespace
+                                )
+                            else:
+                                doit = False
+                                warnings += 1
+                                continue
                         else:
-                            warnings += 1
                             doit = False
+                        if doit:
+                            os.remove(test_relpath)
+                    else:
+                        LOGGER.info('module %d / %d - %s - step 5 - tests from %r - "%s"!', m, len(modules) - 1, module, token, test_relpath)
+                        doit = True
+                        if os.path.isfile(test_relpath):
+                            LOGGER.warning('module %d / %d - %s - step 5 - tests from %r - "%s" already exists!', m, len(modules) - 1, module, token, test_relpath)
+                            if force:
+                                LOGGER.critical('module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING!', m, len(modules) - 1, module, token, test_relpath)
+                            else:
+                                warnings += 1
+                                doit = False
 
-                    if doit:
-                        test_module_dot_path = '{}.{}'.format(tests_base, module_so_far)
-                        content = test_template.format(
-                            author=author,
-                            email=email,
-                            date=DATE,
-                            module_dot_path=module_so_far,
-                            test_module_dot_path=test_module_dot_path,
-                            script_relpath=test_relpath,
-                        )
-                        write_text_file(test_relpath, content)
-                        created_type_module_filepaths.append(('test', module_so_far, abspath(test_relpath)))
+                        if doit:
+                            test_module_dot_path = '{}.{}'.format(tests_base, module_so_far)
+                            content = test_template.format(
+                                author=author,
+                                email=email,
+                                date=DATE,
+                                module_dot_path=module_so_far,
+                                test_module_dot_path=test_module_dot_path,
+                                script_relpath=test_relpath,
+                            )
+                            write_text_file(test_relpath, content)
+                            created_type_module_filepaths.append(('test', module_so_far, abspath(test_relpath)))
 
                     current_directory = '{}/{}'.format(current_directory, token)
 
@@ -339,7 +398,6 @@ def audit_manifest(no_modify=False, no_verify=False):
 
 
 SCRIPT_RELPLATH_REGEX = re.compile(r"SCRIPT_RELPATH = r?'[\d\w\-\\\/\.]+\.py'")
-IGNORED_DIRS = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache', '.mypy_cache']
 DEFAULT_EXTENSIONS = ['.py']
 
 

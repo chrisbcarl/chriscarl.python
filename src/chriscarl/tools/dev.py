@@ -149,9 +149,16 @@ class Create(Mode):
             # generate a tool with the following files
                 - SKIP: src/chriscarl/__init__.py
                 - src/chriscarl/tools/__init__.py
-                - src/chriscarl/tools.fib.py
+                - src/chriscarl/tools/fib.py
                 - tests/chriscarl/test_tools.py
                 - tests/chriscarl/tools/test_fib.py
+        - dev create tools.clock --tool --namespace tools
+            # create this module as a namespace with --namespace in common with other namespace projects
+                - DELETE: src/chriscarl/__init__.py
+                - DELETE: src/chriscarl/tools/__init__.py
+                - src/chriscarl/tools/clock.py
+                - DELETE: tests/chriscarl/test_tools.py
+                - tests/chriscarl/tools/test_clock.py
     '''
     modules: List[str] = field(default_factory=lambda: [])
     tests_dirname: str = DEFAULT_TESTS_DIRNAME
@@ -159,6 +166,7 @@ class Create(Mode):
     tool: bool = False
     no_test: bool = False
     no_module: bool = False
+    namespace: str = ''
 
     @classmethod
     def argparser(cls, subparser_root=None):
@@ -171,6 +179,7 @@ class Create(Mode):
         mode.add_argument('--tool', '-t', action='store_true', help='make a tool out of this rather than a module (it still gets tests)')
         mode.add_argument('--no-test', '-n', action='store_true', help='do not generate the test')
         mode.add_argument('--no-module', action='store_true', help='do not generate the modules')
+        mode.add_argument('--namespace', type=str, help='clear any __init__.py files in the namespace paths')
         Mode.add_common_arguments(mode)
 
         return mode
@@ -189,6 +198,7 @@ class Create(Mode):
             tool=self.tool,
             no_test=self.no_test,
             no_module=self.no_module,
+            namespace=self.namespace,
             launch=True,
         )
         return len(created_type_module_filepaths) > 0
