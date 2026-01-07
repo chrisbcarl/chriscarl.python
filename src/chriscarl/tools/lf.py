@@ -135,8 +135,8 @@ def main():
                 # unichars = len([ord(char) > 255 for char in content])
                 # if unichars / chars > args.threshold:
                 LOGGER.debug(filepath)
-                with open(filepath, 'w', encoding='utf-8') as w:
-                    w.write(content.replace('\r\n', '\n'))
+                with open(filepath, 'w', encoding='utf-8', newline='\n') as w:
+                    w.write(content)
 
                 replacements += 1
             except UnicodeDecodeError:

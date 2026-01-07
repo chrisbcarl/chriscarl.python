@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         
-Email:          
+Author:         Chris Carl
+Email:          chrisbcarl@outlook.com
 Date:           2026-01-06
 Description:
 
-core.functors.parse is... TODO: lorem ipsum
+core.functors.parse is for parsing classes or functions, things like html, command line output, etc.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
