@@ -17,7 +17,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import List, Generator
+from typing import List, Generator, Optional
 from dataclasses import dataclass, field
 from argparse import ArgumentParser
 
@@ -106,9 +106,10 @@ class Arguments:
         configure_ez(level=self.log_level, filepath=self.log_filepath)
 
     @staticmethod
-    def from_argparser(parser):
-        # type: (ArgumentParser) -> Arguments
-        ns = parser.parse_args()
+    def parse(parser=None, argv=None):
+        # type: (Optional[ArgumentParser], Optional[List[str]]) -> Arguments
+        parser = parser or Arguments.argparser()
+        ns = parser.parse_args(argv)
         arguments = Arguments(**(vars(ns)))
         arguments.process()
         return arguments
@@ -121,7 +122,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    args = Arguments.from_argparser(parser)
+    args = Arguments.parse(parser=parser)
     numbers = []
     for fib in fast_fib(args.n, debug=args.debug, a=args.init[0], b=args.init[1]):
         numbers.append(fib)

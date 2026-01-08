@@ -27,7 +27,7 @@ from typing import Callable
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.io import read_text_file
+from chriscarl.core.lib.stdlib.io import read_text_file_try
 from chriscarl.core.lib.stdlib.os import is_file
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/parse/html.py'
@@ -83,9 +83,9 @@ class Dom():
     tags = {}
 
     @classmethod
-    def from_html(cls, html, encoding='utf-8'):
+    def from_html(cls, html):
         # type: (str, str) -> Dom
-        return html_to_dom(html, encoding=encoding)
+        return html_to_dom(html)
 
     def __init__(self, nodes):
         self.nodes = nodes
@@ -157,9 +157,9 @@ class HtmlNestedParser(_HTMLParser):
     # https://docs.python.org/3/library/html.parser.html
     stack = []
 
-    def parse(self, html, encoding='utf-8'):
+    def parse(self, html):
         # type: (str, str) -> Dom
-        return html_to_dom(html, encoding=encoding)
+        return html_to_dom(html)
 
     def feed(self, data):
         # type: (str) -> None
@@ -244,10 +244,10 @@ class HtmlNestedParser(_HTMLParser):
     #     pass
 
 
-def html_to_dom(text, encoding='utf-8'):
+def html_to_dom(text):
     # type: (str, str) -> Dom
     parser = HtmlNestedParser()
     if is_file(text):
-        text = read_text_file(text, encoding=encoding)
+        text = read_text_file_try(text)
     dom = parser.feed(text)
     return dom

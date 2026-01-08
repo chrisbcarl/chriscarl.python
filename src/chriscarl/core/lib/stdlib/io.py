@@ -10,6 +10,7 @@ core.lib.stdlib.io is all about basic input/output operations
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-07 - core.lib.stdlib.io - added read_text_file_try
     2024-11-24 - core.lib.stdlib.io - initial commit
 '''
 
@@ -18,6 +19,8 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import locale
+from typing import List
 
 # third party imports
 
@@ -37,6 +40,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 MODES = ['r', 'w', 'a', 'rb', 'wb', 'ab']
 MODES += ['{}+'.format(__mode) for __mode in MODES]
+ENCODINGS_TYPICAL = [sys.getfilesystemencoding(), locale.getpreferredencoding(), 'iso-8859-1']  # utf-8, cp1252, latin-1
 
 
 def read_text_file(filepath, encoding='utf-8'):
@@ -46,6 +50,18 @@ def read_text_file(filepath, encoding='utf-8'):
             return r.read()
     except UnicodeDecodeError as ude:
         raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason)) from ude
+
+
+def read_text_file_try(filepath, encodings=ENCODINGS_TYPICAL):
+    # type: (str, List[str]) -> str
+    # https://stackoverflow.com/a/36316351
+    for e, encoding in enumerate(encodings):
+        try:
+            with open(filepath, 'r', encoding=encoding) as r:
+                return r.read()
+        except UnicodeDecodeError as ude:
+            if e + 1 == len(encodings):
+                raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason)) from ude
 
 
 def read_bytes_file(filepath):

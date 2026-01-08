@@ -107,6 +107,8 @@ EVERYTHING_FORMAT = (
 TIMED_ROTATING_WHEN = ['S', 'M', 'H', 'D', 'midnight']
 TIMED_ROTATING_WHEN += ['W{}'.format(__d) for __d in range(7)]
 
+DEFAULT_LOG_LEVEL = 'INFO'
+
 
 def get_log_func_from_level(log_level='DEBUG'):
     # type: (Union[str, int]) -> Callable
@@ -241,12 +243,12 @@ class SuccinctFormatter(logging.Formatter):
 
         if self._mode == 0:  # default
             relpath = os.path.relpath(record.pathname, CWD)
-            debug_info = '"{:s}", line {:d}'.format(relpath, record.lineno)
+            debug_info = '"{:s}", line {:d} - {:s}'.format(relpath, record.lineno, record.funcName)
         elif self._mode == 1:  # verbose
             top_module = record.name.split('.')[0]
-            debug_info = '<{:s}>"{:s}", line {:d}'.format(top_module, record.pathname, record.lineno)
+            debug_info = '<{:s}>"{:s}", line {:d} - {:s}'.format(top_module, record.pathname, record.lineno, record.funcName)
         elif self._mode == 2:  # all
-            debug_info = 'p{:s}({:s})/t{:s}({:s}) - "{:s}", line {:d}'.format(
+            debug_info = 'p{:s}({:s})/t{:s}({:s}) - "{:s}", line {:d} - {:s}'.format(
                 str(record.process), record.processName, str(record.thread), record.threadName, record.pathname, record.lineno
             )
         setattr(record, 'debug_info', debug_info)

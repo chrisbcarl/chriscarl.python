@@ -106,12 +106,14 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-        res = lib.download_pool([self.file_url0, self.file_url1], '/temp', flat=False)
+        res, failures = lib.download_pool([self.file_url0, self.file_url1], '/temp', flat=False)
         variables = [
             (set, res),
+            (int, failures),
         ]
         controls = [
             set(controls),
+            0,
         ]
         self.assert_null_hypothesis(variables, controls)
 

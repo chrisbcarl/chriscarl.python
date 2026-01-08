@@ -20,7 +20,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from argparse import ArgumentParser
-from typing import List
+from typing import List, Optional
 
 # third party imports
 
@@ -86,9 +86,10 @@ class Arguments:
         configure_ez(level=self.log_level, filepath=self.log_filepath)
 
     @staticmethod
-    def from_argparser(parser):
-        # type: (ArgumentParser) -> Arguments
-        ns = parser.parse_args()
+    def parse(parser=None, argv=None):
+        # type: (Optional[ArgumentParser], Optional[List[str]]) -> Arguments
+        parser = parser or Arguments.argparser()
+        ns = parser.parse_args(argv)
         arguments = Arguments(**(vars(ns)))
         arguments.process()
         return arguments
@@ -101,7 +102,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    args = Arguments.from_argparser(parser)
+    args = Arguments.parse(parser=parser)
     args.dirpath = abspath(args.dirpath)
 
     LOGGER.info('starting')

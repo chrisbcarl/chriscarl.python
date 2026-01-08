@@ -10,6 +10,7 @@ core.lib.stdlib.urllib is where I stash most of my learnings on how to download 
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-07 - core.lib.stdlib.urllib - download augmented to deal with edge cases like Wikipedia of all places
     2026-01-06 - core.lib.stdlib.urllib - initial commit
 '''
 
@@ -18,19 +19,24 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import re
+import time
+import random
 import ssl
 import threading
+import contextlib
 import multiprocessing
 import concurrent.futures
-import urllib
+import urllib.error
 import urllib.request
 from urllib.parse import urljoin, urlparse
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Tuple
 
 # third party imports
 
 # project imports
 from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.lib.stdlib.io import read_text_file_try
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/urllib.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -44,17 +50,17 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-def get_basename(uri):
+def get_basename(url):
     # type: (str) -> str
-    up = urlparse(uri)
+    up = urlparse(url)
     if not up.path:
-        return up.hostname.split('www.')[1]
+        return up.hostname.split('www.')[-1]
     return up.path.split('/')[-1]
 
 
-def get_filepath(uri, dirpath, flat=False):
+def get_filepath(url, dirpath, flat=False):
     # type: (str, str, bool) -> str
-    up = urlparse(uri)
+    up = urlparse(url)
     hostname = up.hostname.split('www.')[-1]
     tokens = [hostname] + up.path.split('/')
     if flat:
@@ -67,12 +73,12 @@ def get_filepath(uri, dirpath, flat=False):
     return filepath
 
 
-def create_internet_shortcut(uri, dirpath):
+def create_internet_shortcut(url, dirpath):
     # type: (str, str) -> str
-    basename = get_basename(uri)
+    basename = get_basename(url)
     internet_shortcut_filepath = abspath(dirpath, f'{basename}.url')
     internet_shortcut = f'''[InternetShortcut]
-URL={uri}'''
+URL={url}'''
     with open(internet_shortcut_filepath, 'w', encoding='utf-8') as w:
         w.write(internet_shortcut)
 
@@ -80,35 +86,144 @@ URL={uri}'''
 
 
 HEADERS = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    'accept-encoding': 'gzip, deflate, br, zstd',
-    'accept-language': 'en-US,en;q=0.9',
-    'cache-control': 'no-cache;max-age=0',
-    'connection': 'keep-alive',
-    'pragma': 'no-cache',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'no-cache;max-age=0',
+    'Connection': 'keep-alive',
+    'Pragma': 'no-cache',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+    'sec-ch-ua': '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
 }
 SSL_BASIC_CTX = ssl.create_default_context()
 SSL_BASIC_CTX.check_hostname = False
 SSL_BASIC_CTX.verify_mode = ssl.CERT_NONE
+WEB_FILENAME_EXTENSIONS = set(
+    [
+        # https://www.geeksforgeeks.org/techtips/web-page-file-formats/
+        '.html',
+        '.htm',
+        '.php',
+        '.xhtml',  # (Extensible Hypertext Markup Language): An XML-based version of HTML
+        '.asp',  # (.asp): One of these includes Active Server Pages [ASP] which is a server side script written by Microsoft. These are not meant for users, they comprise of server side code that gets delivered to a browser after processing by the ABS.:%.* These are among some of the commonly utilized in Windows based web hosting setups.
+        '.aspx',  # (Active Server Pages Extended): An extension of ASP that supports .NET framework
+        '.rss',  # (Really Simple Syndication): A web feed format
+        '.xps',  # (.xps): XML-based file format
+    ]
+)
 
 
-def download(uri, dirpath, flat=True, exist_skip=False, context=SSL_BASIC_CTX, stop_event=None):
-    # type: (str, str, bool, bool, ssl.SSLContext, threading.Event) -> str
-    filepath = get_filepath(uri, dirpath, flat=flat)
-    if exist_skip and os.path.isfile(filepath):
-        return filepath
+def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_a='link'):
+    # type: (str, str, ssl.SSLContext, dict) -> Tuple[bool, str]
+    LOGGER.debug('method 0 on %s to "%s"', url, filepath)
     dirpath = os.path.dirname(filepath)
     os.makedirs(dirpath, exist_ok=True)
-    logging.debug('downloading %s to "%s"', uri, filepath)
-    req = urllib.request.Request(uri, headers=HEADERS)  # NECESSARY so that it appears browser-ish
-    with urllib.request.urlopen(req, context=context) as response, open(filepath, 'wb') as wb:
-        wb.write(response.read())
-    return filepath
+    req = urllib.request.Request(url, headers=headers)  #
+    try:
+        # NOTE: PRIMARY, handles MOST cases.
+        #   fails: wikipedia
+        #       - https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/960px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg
+        try_again = False
+        try:
+            urllib.request.urlretrieve(url, filepath)  # works most of the time, but we need the response.url
+            if is_a == 'link':
+                try:
+                    content = read_text_file_try(filepath)
+                    try_again = re.search(r'<body.+?body>', content, flags=re.DOTALL | re.MULTILINE) is None
+                except UnicodeDecodeError:
+                    try_again = True
+        except urllib.error.URLError:
+            try_again = True
+
+        with urllib.request.urlopen(req, context=context) as response:
+            # shutil.copyfileobj(response, wb)  # also doesnt work all the time
+            # BUG: https://www.marxists.org/archive/marx/works/download/index.htm
+            url = response.url  # NOTE: we need to know this change... it could have been changed on access, like adding a / or full redirect name
+            if try_again:
+                with open(filepath, 'wb') as wb:
+                    wb.write(response.read())  # doesnt work all the time, not sure why
+        if is_a == 'link':
+            try:
+                content = read_text_file_try(filepath)
+                try_again = re.search(r'<body.+?body>', content, flags=re.DOTALL | re.MULTILINE) is None
+            except UnicodeDecodeError:
+                try_again = True
+            if try_again:
+                raise RuntimeError(f'{url} which is a {is_a} could not be read as HTML!')
+    except urllib.error.HTTPError as he:
+        if he.code in {404, 403}:
+            raise he
+        LOGGER.debug('error attempting to download %s, trying fallback...', url, exc_info=True)
+        return False
+
+    return True, url
 
 
-def download_pool(urls, dirpath=None, flat=False, downloader=download, workers=multiprocessing.cpu_count() - 2):
-    # type: (List[str], Optional[str], bool, Callable[[str, str, bool, bool, ssl.SSLContext, threading.Event], bool], int) -> int
+def download_method_1(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS):
+    # type: (str, str, ssl.SSLContext, dict) -> Tuple[bool, str]
+    # NOTE: SECONDARY, handles direct files just fine, not web page themselves for some reason...
+    #   fails (output is malformed): index htmls
+    #       - https://pypi.org/simple/six/
+    # NOTE: https://stackoverflow.com/a/46511429
+    LOGGER.debug('method 1 on %s to "%s"', url, filepath)
+    dirpath = os.path.dirname(filepath)
+    os.makedirs(dirpath, exist_ok=True)
+
+    handler = urllib.request.HTTPSHandler(context=context)
+    opener = urllib.request.build_opener(handler)
+    opener.addheaders = [(k, v) for k, v in headers.items()]  # NECESSARY so that it appears browser-ish
+    # urllib.request.install_opener(opener)
+
+    # NOTE: C:\Python312\Lib\urllib\request.py, ripoff of urlretrieve
+    with contextlib.closing(opener.open(url, data=None)) as response, open(filepath, 'wb') as wb:
+        # headers = response.info()  # normally you'd check total read vs size = int(headers["Content-Length"])
+        # BUG: https://www.marxists.org/archive/marx/works/download/index.htm
+        url = response.url  # NOTE: we need to know this change... it could have been changed on access, like adding a / or full redirect name
+        bs = 1024 * 8
+        # size = -1
+        read = 0
+        blocknum = 0
+        # if "content-length" in headers:
+        #     size = int(headers["Content-Length"])
+        while block := response.read(bs):  # WARNING: 3.8+ assignment operator and usage, loop ends when block == 0
+            read += len(block)
+            wb.write(block)
+            blocknum += 1
+
+    return True, url
+
+
+def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=False, context=SSL_BASIC_CTX, stop_event=None, headers=HEADERS):
+    # type: (str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict) -> Tuple[str, str]
+    global URLLIB_PRIOR_CONTEXT, URLLIB_OPENER
+    filepath = get_filepath(url, dirpath, flat=flat)
+    if skip_exist and os.path.isfile(filepath):
+        return filepath
+    if os.path.isdir(filepath) or is_a == 'link':
+        filepath = f'{filepath}.html'
+    LOGGER.debug('downloading %s to "%s"', url, filepath)
+
+    if is_a == 'file':
+        _, url = download_method_1(url, filepath)
+    else:
+        worked, url = download_method_0(url, filepath, context=context, headers=headers, is_a=is_a)
+        if not worked:
+            _, url = download_method_1(url, filepath, context=context, headers=headers)
+
+    if not skip_sleep:
+        time.sleep(random.randint(0, 3690) / 1000)
+    return filepath, url
+
+
+def download_pool(urls, dirpath=None, flat=False, skip_exist=False, skip_sleep=False, downloader=download, workers=multiprocessing.cpu_count() - 2):
+    # type: (List[str], Optional[str], bool, bool, bool, Callable[[str, str, bool, bool, ssl.SSLContext, threading.Event], bool], int) -> Tuple[List[str], int]
     '''
     Description:
         Efficiently download using a pool
@@ -119,27 +234,38 @@ def download_pool(urls, dirpath=None, flat=False, downloader=download, workers=m
             default False
             if flat, only use the basenames of urls as the filename
             otherwise, use the url path as subdirectories
+        skip_exist: bool
+            default False
+            if exists on disk, do not download
+        skip_sleep: bool
+            default False
+            skip the random up to 3.69 second delay inbetween submitting files to be downloaded
         workers: int
             number of workers
     Returns:
-        int:    number of failures
+        Tuple[List[str], int]
+            List[str]:  downloaded filepaths
+            int:        number of failures
     '''
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         future_to_url = {}
         for url in urls:
-            future = executor.submit(downloader, url, dirpath=dirpath, flat=flat, exist_skip=True)
+            future = executor.submit(downloader, url, is_a='file', dirpath=dirpath, flat=flat, skip_exist=skip_exist, skip_sleep=skip_sleep)
             future_to_url[future] = url
 
         results = []
+        failures = 0
         finished = 0
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
             finished += 1
+            if finished % 25 == 0:
+                LOGGER.info('%d / %d - %0.2f%%', finished, len(future_to_url), finished / len(future_to_url) * 100)
             try:
                 results.append(future.result())
-                logging.debug('%d / %d succeeded!', finished, len(future_to_url))
+                LOGGER.debug('%d / %d - %s succeeded!', finished, len(future_to_url), url)
             except Exception:
                 failures += 1
-                logging.error('%d / %d failed!', finished, len(future_to_url))
-                logging.debug('%d / %d failed!', finished, len(future_to_url), exc_info=True)
-    return results
+                LOGGER.error('%d / %d - %s failed!', finished, len(future_to_url), url)
+                LOGGER.debug('%d / %d - %s failed!', finished, len(future_to_url), url, exc_info=True)
+    return results, failures

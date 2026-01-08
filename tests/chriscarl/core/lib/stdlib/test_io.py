@@ -63,11 +63,18 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1_no_unicode_throw(self):
+        cp1252 = abspath(TEST_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
+        content = lib.read_text_file_try(cp1252)
+        self.assertTrue(content)
+        self.assertRaises(UnicodeDecodeError, lib.read_text_file_try, sys.executable)  # no encoding can handle this...
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     tc.test_case_0_unicode_throw()
+    tc.test_case_1_no_unicode_throw()
 
     tc.tearDown()
