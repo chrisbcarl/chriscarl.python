@@ -90,7 +90,7 @@ HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
     'Accept-Language': 'en-US,en;q=0.9',
-    'Cache-Control': 'no-cache;max-age=0',
+    'Cache-Control': 'max-age=0',
     'Connection': 'keep-alive',
     'Pragma': 'no-cache',
     'Sec-Fetch-Dest': 'document',
@@ -161,7 +161,10 @@ def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_
         if he.code in {404, 403}:
             raise he
         LOGGER.debug('error attempting to download %s, trying fallback...', url, exc_info=True)
-        return False
+        LOGGER.debug('%s reason: %r, status code: %d', url, he.reason, he.code)
+        LOGGER.debug('%s response headers: %s', url, he.hdrs)
+
+        return False, url
 
     return True, url
 
