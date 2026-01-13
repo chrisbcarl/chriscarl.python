@@ -4,12 +4,55 @@ version = "0.0.0"
 description = "Project that contains my everything--algorithms, data structures, tools, methodologies, tips, tricks, snippets, templates, code gen, etc."
 authors = [{name = "Chris Carl", email = "chrisbcarl@outlook.com"}]
 readme = "README.md"
+license = "MIT"
 classifiers = [
     "Programming Language :: Python",
     "Development Status :: 2 - Pre-Alpha",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 requires-python = "^3.12,<3.14"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.chriscarl]
+codeword = 'chaos'
+created = ''
+modified = ''
+
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__"
+]
+ignore = ["ignoreme"]
+stubPath = "dist/stubs"
+# defineConstant = { DEBUG = true }
+reportAttributeAccessIssue = false  # ._MEIPASS
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+addopts = [
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#test-discovery
+    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#which-import-mode
+    # allows you to have 2 test file names that are exaclty the same like a/test_lib.py and b/test_lib.py
+    "--import-mode=importlib",
+]
+
+
+[[tool.mypy.overrides]]
+module = [
+    'parameterized',
+]
+ignore_missing_imports = true
 
 
 [tool.poetry]
@@ -27,9 +70,9 @@ repository = "https://github.com/chrisbcarl/chriscarl.python"
 
 [tool.poetry.urls]
 changelog = "https://github.com/chrisbcarl/chriscarl.python/blob/main/CHANGELOG.md"
-homepage = "https://example.com"
-documentation = "https://readthedocs.org"
-"bug tracker" = "https://github.com/me/spam/issues"
+homepage = "https://chriscarl.com"
+# documentation = "https://readthedocs.org"
+# "bug tracker" = "https://github.com/me/spam/issues"
 
 
 [tool.poetry.scripts]
@@ -58,33 +101,3 @@ types-six = "^1.16.21.20241105"
 pytest-cov = "^6.0.0"
 gitpython = "^3.1.43"
 mypy = "^1.19.1"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
-]
-addopts = [
-    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#test-discovery
-    # https://docs.pytest.org/en/latest/explanation/goodpractices.html#which-import-mode
-    # allows you to have 2 test file names that are exaclty the same like a/test_lib.py and b/test_lib.py
-    "--import-mode=importlib",
-]
-
-
-[[tool.mypy.overrides]]
-module = [
-    'parameterized',
-]
-ignore_missing_imports = true
-
-
-[tool.chriscarl]
-codeword = 'chaos'
-created = ''
-modified = ''

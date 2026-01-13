@@ -95,7 +95,7 @@ HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
     'Accept-Language': 'en-US,en;q=0.9',
-    'Cache-Control': 'no-cache;max-age=0',
+    'Cache-Control': 'max-age=0',
     'Connection': 'keep-alive',
     'Pragma': 'no-cache',
     'Sec-Fetch-Dest': 'document',
@@ -144,7 +144,9 @@ def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_
                     try_again = re.search(r'<body.+?body>', content, flags=re.DOTALL | re.MULTILINE) is None
                 except UnicodeDecodeError:
                     try_again = True
-        except urllib.error.URLError:
+        except urllib.error.HTTPError as he:
+            if he.code in {404, 403}:
+                raise he
             try_again = True
 
         with urllib.request.urlopen(req, context=context) as response:
@@ -165,7 +167,9 @@ def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_
     except urllib.error.HTTPError as he:
         if he.code in {404, 403}:
             raise he
-        LOGGER.debug('error attempting to download %s, trying fallback...', url, exc_info=True)
+        LOGGER.debug('%s reason: %r, status code: %d', url, he.reason, he.code)
+        LOGGER.debug('%s response headers: %s', url, he.hdrs)
+
         return False, url
 
     return True, url
@@ -206,7 +210,7 @@ def download_method_1(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS):
 
 
 def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=False, context=SSL_BASIC_CTX, stop_event=None, headers=HEADERS):
-    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict) -> Tuple[str, str]
+    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict) -> Tuple[str, str]
     '''
     Returns:
         Tuple[str, str]
@@ -225,6 +229,7 @@ def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=
     else:
         worked, url = download_method_0(url, filepath, context=context, headers=headers, is_a=is_a)
         if not worked:
+            LOGGER.debug('error attempting to download_method_0 %s, trying fallback...', url)
             _, url = download_method_1(url, filepath, context=context, headers=headers)
 
     if not skip_sleep:
@@ -233,7 +238,7 @@ def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=
 
 
 def download_pool(urls, dirpath=None, flat=False, skip_exist=False, skip_sleep=False, downloader=download, workers=multiprocessing.cpu_count() - 2):
-    # type: (List[str], Optional[str], bool, bool, bool, Callable[[str, str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict], Tuple[str, str]], int) -> Tuple[List[str], int]
+    # type: (List[str], Optional[str], bool, bool, bool, Callable[[str, str, str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict], Tuple[str, str]], int) -> Tuple[List[str], int]
     '''
     Description:
         Efficiently download using a pool
