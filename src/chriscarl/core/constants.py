@@ -85,7 +85,6 @@ def fix_constants(module):
 
     module_dirpath = module.__file__
     ups = ['../'] * (len(module_tokens) - 1)
-    print(ups)
     module_dirpath = os.path.abspath(os.path.join(module_dirpath, *ups))
 
     CWD = os.getcwd()
