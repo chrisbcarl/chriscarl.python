@@ -70,7 +70,7 @@ def fix_constants(module):
     Returns:
         None
     '''
-    # global PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
+    global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
     if not isinstance(module, ModuleType):
         raise ValueError(f'module must be of type {ModuleType}, provided {type(module)}!')
     module_str = module.__name__
@@ -94,9 +94,3 @@ def fix_constants(module):
     TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
     TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
     PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
-
-    print('PYPA_SRC_DIRPATH', PYPA_SRC_DIRPATH)
-    print('REPO_DIRPATH', REPO_DIRPATH)
-    print('TESTS_DIRPATH', TESTS_DIRPATH)
-    print('TEST_COLLATERAL_DIRPATH', TEST_COLLATERAL_DIRPATH)
-    print('PIP_DEVELOP_MODE', PIP_DEVELOP_MODE)

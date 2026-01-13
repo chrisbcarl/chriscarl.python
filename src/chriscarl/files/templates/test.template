@@ -42,6 +42,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 fix_constants(lib)  # deal with namespace sharding the files across directories
 
+
 class TestCase(UnitTest):
 
     def setUp(self):
