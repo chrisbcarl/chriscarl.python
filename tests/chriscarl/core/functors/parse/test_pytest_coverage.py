@@ -30,7 +30,7 @@ from chriscarl.core.lib.stdlib.os import abspath
 # test imports
 import chriscarl.core.functors.parse.pytest_coverage as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/functors/parse/pytest_coverage.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/functors/parse/test_pytest_coverage.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

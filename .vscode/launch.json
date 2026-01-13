@@ -62,5 +62,18 @@
                 "DEBUG",
             ]
         },
+        {
+            "name": "[tools] - str",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/chriscarl/tools/str.py",
+            "console": "integratedTerminal",
+            "args": [
+                "service",
+                //
+                "--log-level",
+                "DEBUG",
+            ]
+        },
     ]
 }

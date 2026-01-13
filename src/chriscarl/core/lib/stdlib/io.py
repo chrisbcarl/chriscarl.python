@@ -62,6 +62,7 @@ def read_text_file_try(filepath, encodings=ENCODINGS_TYPICAL):
         except UnicodeDecodeError as ude:
             if e + 1 == len(encodings):
                 raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason)) from ude
+    return ''
 
 
 def read_bytes_file(filepath):

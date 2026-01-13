@@ -97,6 +97,9 @@ class Arguments:
 
 def main():
     # type: () -> int
+    '''
+    # FEATURE: tool-lf
+    '''
     parser = Arguments.argparser()
     if len(sys.argv) == 1:
         parser.print_help()

@@ -96,9 +96,11 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_2(self):
+        tpl0 = lib.download(self.file_url0, '/temp', flat=False)
+        tpl1 = lib.download(self.file_url1, '/temp', flat=False)
         variables = [
-            (lib.download, (self.file_url0, '/temp'), dict(flat=False)),
-            (lib.download, (self.file_url1, '/temp'), dict(flat=False)),
+            (lambda x: x[0], (tpl0, )),
+            (lambda x: x[0], (tpl1, )),
         ]
         controls = [
             abspath('/temp/samplefile.com/static/samples/document/txt/txt_sample_file_1MB.txt'),
@@ -121,7 +123,7 @@ class TestCase(UnitTest):
             (lib.download_pool, ([self.file_url2], '/temp'), dict(flat=True)),
         ]
         controls = [
-            [abspath('/temp/Cityvarvet_January_2022_10.jpg')],
+            ([abspath('/temp/Cityvarvet_January_2022_10.jpg')], 0),  # 0 failures
         ]
         self.assert_null_hypothesis(variables, controls)
 

@@ -27,7 +27,7 @@ from chriscarl.core.lib.stdlib.unittest import UnitTest
 # test imports
 import chriscarl.core.types.str as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/types/test_string.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/types/test_str.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:

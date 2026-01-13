@@ -324,7 +324,7 @@ def run_functions_by_dot_path(root_module, func_names, print_help=False, log_lev
             else:
                 funcs.append(func)
 
-        LOGGER.info('running %d funcs %s!', len(funcs), len(funcs))
+        LOGGER.info('running %d funcs!', len(funcs))
         results = list(run_func_args_kwargs(funcs, log_level=log_level))  # type: ignore
         return 0 if all(results) else 1
     except ModuleNotFoundError as mnfe:

@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2026-01-07
 Description:
 
-tools.fib is a tool which... TODO: lorem ipsum
+tools.fib is a tool which... really doesnt do much
 
 Updates:
-    2026-01-07 - tools.fib - initial commit
+    2026-01-07 - tools.fib - initial commit  # FEATURE: tool-fib
 '''
 
 # stdlib imports

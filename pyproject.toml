@@ -36,6 +36,7 @@ documentation = "https://readthedocs.org"
 dev = 'chriscarl.tools.dev:main'
 fib = 'chriscarl.tools.fib:main'
 lf = 'chriscarl.tools.lf:main'
+str = 'chriscarl.tools.str:main'
 
 
 [tool.poetry.dependencies]

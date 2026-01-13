@@ -9,7 +9,7 @@ Long description.
 
 ## Commands
 ```bash
-dev create tools.lf --tool -f --namespace
+dev create tools.lf --tool --namespace -f
 ```
 
 

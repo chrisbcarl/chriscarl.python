@@ -10,6 +10,7 @@ core.constants are useful to have actual constants
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-13 - core.constants - added fix_constants to deal with namespace development
     2026-01-07 - core.constants - updated to deal with change to namespace rather than regular module.
     2024-11-22 - core.constants - initial commit
 '''
@@ -20,10 +21,12 @@ import os
 import sys
 import logging
 import datetime
+from types import ModuleType
 
 # third party imports
 
 # project imports
+import chriscarl
 
 SCRIPT_RELPATH = 'chriscarl/core/constants.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -38,11 +41,13 @@ LOGGER.addHandler(logging.NullHandler())
 
 # MODULE_DIRPATH = os.path.abspath(os.path.dirname(chriscarl.__file__))
 # cannot do this because chriscarl is now a namespace, not a regular module
+CWD = os.getcwd()
 MODULE_DIRPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-PYPA_SRC_DIRPATH = os.path.join(MODULE_DIRPATH, '../')
-REPO_DIRPATH = os.path.join(PYPA_SRC_DIRPATH, '../')
-TESTS_DIRPATH = os.path.join(REPO_DIRPATH, 'tests')
-TEST_COLLATERAL_DIRPATH = os.path.join(TESTS_DIRPATH, 'collateral')
+PYPA_SRC_DIRPATH = os.path.abspath(os.path.join(MODULE_DIRPATH, '../'))
+REPO_DIRPATH = os.path.abspath(os.path.join(PYPA_SRC_DIRPATH, '../'))
+TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
+TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
+PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
 CWD = os.getcwd()
 NOW = datetime.datetime.now()
 DATE = NOW.strftime('%Y-%m-%d')
@@ -52,3 +57,46 @@ SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf5
 TEMP_DIRPATH = '/temp'
 if sys.platform != 'win32':
     TEMP_DIRPATH = '/tmp'
+
+
+def fix_constants(module):
+    # type: (ModuleType) -> None
+    '''
+    Description:
+        If running a test file from a namespaced project, these paths will be wrong,
+            so that needs to be fixed depending.
+    Arguments:
+
+    Returns:
+        None
+    '''
+    # global PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
+    if not isinstance(module, ModuleType):
+        raise ValueError(f'module must be of type {ModuleType}, provided {type(module)}!')
+    module_str = module.__name__
+    module_tokens = module_str.split('.')
+    if len(module_tokens) == 1:
+        return
+    if module_tokens[0] != chriscarl.__name__:
+        return  # nothing to modify, irrelevant
+
+    if not hasattr(module, '__file__'):
+        raise RuntimeError(f'{module_str!r} cannot fix_constants on a namespace module that doesnt have a __file__!')
+
+    module_dirpath = module.__file__
+    ups = ['../'] * (len(module_tokens) - 1)
+    print(ups)
+    module_dirpath = os.path.abspath(os.path.join(module_dirpath, *ups))
+
+    CWD = os.getcwd()
+    PYPA_SRC_DIRPATH = os.path.abspath(os.path.join(module_dirpath, '../'))
+    REPO_DIRPATH = os.path.abspath(os.path.join(PYPA_SRC_DIRPATH, '../'))
+    TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
+    TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
+    PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
+
+    print('PYPA_SRC_DIRPATH', PYPA_SRC_DIRPATH)
+    print('REPO_DIRPATH', REPO_DIRPATH)
+    print('TESTS_DIRPATH', TESTS_DIRPATH)
+    print('TEST_COLLATERAL_DIRPATH', TEST_COLLATERAL_DIRPATH)
+    print('PIP_DEVELOP_MODE', PIP_DEVELOP_MODE)

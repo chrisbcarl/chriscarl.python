@@ -227,11 +227,11 @@ class Run(Mode):
     Basically "run" any number of functions arbitrarily.
 
     Examples:
-        - dev run --funcs "files._self_modify" "files._self_verify"
+        - dev run "files._self_modify" "files._self_verify"
             # runs the following code in the default root module
                 - chriscarl.files._self_modify()
                 - chriscarl.files._self_verify()
-        - dev run --funcs "vars" "locals" "globals" --module "builtins"
+        - dev run "vars" "locals" "globals" --module "builtins"
             # runs the following code from a different module
                 - builtins.vars()
                 - builtins.locals()

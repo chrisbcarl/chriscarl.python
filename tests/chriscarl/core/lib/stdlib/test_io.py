@@ -67,7 +67,7 @@ class TestCase(UnitTest):
         cp1252 = abspath(TEST_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
         content = lib.read_text_file_try(cp1252)
         self.assertTrue(content)
-        self.assertRaises(UnicodeDecodeError, lib.read_text_file_try, sys.executable)  # no encoding can handle this...
+        self.assertRaises(UnicodeDecodeError, lib.read_text_file_try, sys.executable, encodings=['utf-8'])  # turns out iso-8859-1/latin-1 seems to work
 
 
 if __name__ == '__main__':

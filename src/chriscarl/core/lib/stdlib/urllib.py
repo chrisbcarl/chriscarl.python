@@ -10,6 +10,7 @@ core.lib.stdlib.urllib is where I stash most of my learnings on how to download 
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-13 - core.lib.stdlib.urllib - fixed bugs where the return type wasnt tuple and wasnt tested as tuple
     2026-01-07 - core.lib.stdlib.urllib - download augmented to deal with edge cases like Wikipedia of all places
     2026-01-06 - core.lib.stdlib.urllib - initial commit
 '''
@@ -54,6 +55,8 @@ def get_basename(url):
     # type: (str) -> str
     up = urlparse(url)
     if not up.path:
+        if not up.hostname:
+            raise ValueError(f'cannot get basename for a url without a hostname like {url!r}')
         return up.hostname.split('www.')[-1]
     return up.path.split('/')[-1]
 
@@ -61,6 +64,8 @@ def get_basename(url):
 def get_filepath(url, dirpath, flat=False):
     # type: (str, str, bool) -> str
     up = urlparse(url)
+    if not up.hostname:
+        raise ValueError(f'cannot get filepath for a url without a hostname like {url!r}')
     hostname = up.hostname.split('www.')[-1]
     tokens = [hostname] + up.path.split('/')
     if flat:
@@ -121,7 +126,7 @@ WEB_FILENAME_EXTENSIONS = set(
 
 
 def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_a='link'):
-    # type: (str, str, ssl.SSLContext, dict) -> Tuple[bool, str]
+    # type: (str, str, ssl.SSLContext, dict, str) -> Tuple[bool, str]
     LOGGER.debug('method 0 on %s to "%s"', url, filepath)
     dirpath = os.path.dirname(filepath)
     os.makedirs(dirpath, exist_ok=True)
@@ -161,7 +166,7 @@ def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_
         if he.code in {404, 403}:
             raise he
         LOGGER.debug('error attempting to download %s, trying fallback...', url, exc_info=True)
-        return False
+        return False, url
 
     return True, url
 
@@ -201,11 +206,16 @@ def download_method_1(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS):
 
 
 def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=False, context=SSL_BASIC_CTX, stop_event=None, headers=HEADERS):
-    # type: (str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict) -> Tuple[str, str]
+    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict) -> Tuple[str, str]
+    '''
+    Returns:
+        Tuple[str, str]
+            filepath, url
+    '''
     global URLLIB_PRIOR_CONTEXT, URLLIB_OPENER
     filepath = get_filepath(url, dirpath, flat=flat)
     if skip_exist and os.path.isfile(filepath):
-        return filepath
+        return filepath, url
     if os.path.isdir(filepath) or is_a == 'link':
         filepath = f'{filepath}.html'
     LOGGER.debug('downloading %s to "%s"', url, filepath)
@@ -223,7 +233,7 @@ def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=
 
 
 def download_pool(urls, dirpath=None, flat=False, skip_exist=False, skip_sleep=False, downloader=download, workers=multiprocessing.cpu_count() - 2):
-    # type: (List[str], Optional[str], bool, bool, bool, Callable[[str, str, bool, bool, ssl.SSLContext, threading.Event], bool], int) -> Tuple[List[str], int]
+    # type: (List[str], Optional[str], bool, bool, bool, Callable[[str, str, str, bool, bool, bool, ssl.SSLContext, threading.Event, dict], Tuple[str, str]], int) -> Tuple[List[str], int]
     '''
     Description:
         Efficiently download using a pool
@@ -262,7 +272,8 @@ def download_pool(urls, dirpath=None, flat=False, skip_exist=False, skip_sleep=F
             if finished % 25 == 0:
                 LOGGER.info('%d / %d - %0.2f%%', finished, len(future_to_url), finished / len(future_to_url) * 100)
             try:
-                results.append(future.result())
+                filepath, _ = future.result()  # updated_url
+                results.append(filepath)
                 LOGGER.debug('%d / %d - %s succeeded!', finished, len(future_to_url), url)
             except Exception:
                 failures += 1
