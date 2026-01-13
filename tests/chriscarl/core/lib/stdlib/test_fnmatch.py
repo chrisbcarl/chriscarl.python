@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath, walk
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 from chriscarl.core.lib.stdlib.io import write_text_file

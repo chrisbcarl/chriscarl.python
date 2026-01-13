@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
@@ -188,7 +188,6 @@ def e():
             False,
         ]
         self.assert_null_hypothesis(variables, controls)
-
 
 
 if __name__ == '__main__':

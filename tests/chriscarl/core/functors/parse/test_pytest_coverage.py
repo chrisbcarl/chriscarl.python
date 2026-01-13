@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 from chriscarl.core.lib.stdlib.io import read_text_file
 from chriscarl.core.lib.stdlib.os import abspath
@@ -51,7 +51,7 @@ class TestCase(UnitTest):
         return super().tearDown()
 
     def test_case_0_PytestCoverage(self):
-        pytest_coverage_text = read_text_file(abspath(TEST_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
+        pytest_coverage_text = read_text_file(abspath(constants.TEST_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
         pytest_coverages = lib.PytestCoverage.parse_coverage(pytest_coverage_text)
         for pytest_coverage in pytest_coverages:
             LOGGER.debug(pytest_coverage)

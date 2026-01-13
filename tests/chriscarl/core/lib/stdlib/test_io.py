@@ -22,7 +22,7 @@ import unittest
 # third party imports
 
 # project imports (expected to work)
-from chriscarl.core.constants import TEST_COLLATERAL_DIRPATH
+from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
@@ -50,8 +50,8 @@ class TestCase(UnitTest):
         return super().tearDown()
 
     def test_case_0_unicode_throw(self):
-        utf8 = abspath(TEST_COLLATERAL_DIRPATH, 'utf-8')
-        utf16le = abspath(TEST_COLLATERAL_DIRPATH, 'utf-16-le')
+        utf8 = abspath(constants.TEST_COLLATERAL_DIRPATH, 'utf-8')
+        utf16le = abspath(constants.TEST_COLLATERAL_DIRPATH, 'utf-16-le')
         self.assertRaises(UnicodeDecodeError, lib.read_text_file, utf16le)
         variables = [
             (lib.read_text_file, (utf8, ), dict(encoding='utf-8')),
@@ -64,7 +64,7 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_1_no_unicode_throw(self):
-        cp1252 = abspath(TEST_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
+        cp1252 = abspath(constants.TEST_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
         content = lib.read_text_file_try(cp1252)
         self.assertTrue(content)
         self.assertRaises(UnicodeDecodeError, lib.read_text_file_try, sys.executable, encodings=['utf-8'])  # turns out iso-8859-1/latin-1 seems to work
