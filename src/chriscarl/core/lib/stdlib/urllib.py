@@ -10,6 +10,7 @@ core.lib.stdlib.urllib is where I stash most of my learnings on how to download 
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-16 - core.lib.stdlib.urllib - download can return just the text now and handle file:///
     2026-01-13 - core.lib.stdlib.urllib - fixed bugs where the return type wasnt tuple and wasnt tested as tuple
     2026-01-07 - core.lib.stdlib.urllib - download augmented to deal with edge cases like Wikipedia of all places
     2026-01-06 - core.lib.stdlib.urllib - initial commit
@@ -36,8 +37,9 @@ from typing import List, Optional, Callable, Tuple
 # third party imports
 
 # project imports
+from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
-from chriscarl.core.lib.stdlib.io import read_text_file_try
+from chriscarl.core.lib.stdlib.io import read_text_file, read_text_file_try
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/urllib.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -61,12 +63,17 @@ def get_basename(url):
     return up.path.split('/')[-1]
 
 
-def get_filepath(url, dirpath, flat=False):
+def get_filepath(url, dirpath=constants.TEMP_DIRPATH, flat=False):
     # type: (str, str, bool) -> str
+    url = url.replace('\\', '/')  # file:///C:\temp is valid
     up = urlparse(url)
-    if not up.hostname:
+    if not up.hostname and up.scheme != 'file':
         raise ValueError(f'cannot get filepath for a url without a hostname like {url!r}')
-    hostname = up.hostname.split('www.')[-1]
+    if up.hostname:
+        hostname = up.hostname.split('www.')[-1]
+    else:
+        # scheme == 'file'
+        hostname = 'localhost'
     tokens = [hostname] + up.path.split('/')
     if flat:
         if tokens[-1]:
@@ -154,8 +161,9 @@ def download_method_0(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS, is_
             # BUG: https://www.marxists.org/archive/marx/works/download/index.htm
             url = response.url  # NOTE: we need to know this change... it could have been changed on access, like adding a / or full redirect name
             if try_again:
+                body = response.read()
                 with open(filepath, 'wb') as wb:
-                    wb.write(response.read())  # doesnt work all the time, not sure why
+                    wb.write(body)  # doesnt work all the time, not sure why
         if is_a == 'link':
             try:
                 content = read_text_file_try(filepath)
@@ -209,8 +217,19 @@ def download_method_1(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS):
     return True, url
 
 
-def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=False, context=SSL_BASIC_CTX, stop_event=None, headers=HEADERS):
-    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict) -> Tuple[str, str]
+def download(
+    url,
+    dirpath=constants.TEMP_DIRPATH,
+    is_a='file',
+    flat=True,
+    skip_exist=False,
+    skip_sleep=False,
+    context=SSL_BASIC_CTX,
+    stop_event=None,
+    headers=HEADERS,
+    as_body=False,
+):
+    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict, bool) -> Tuple[str, str]
     '''
     Returns:
         Tuple[str, str]
@@ -234,6 +253,8 @@ def download(url, dirpath, is_a='file', flat=True, skip_exist=False, skip_sleep=
 
     if not skip_sleep:
         time.sleep(random.randint(0, 3690) / 1000)
+    if as_body:
+        filepath = read_text_file(filepath)
     return filepath, url
 
 

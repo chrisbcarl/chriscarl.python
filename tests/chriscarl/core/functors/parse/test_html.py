@@ -44,9 +44,9 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
-        self.flat_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'flat.html')
-        self.index_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'index.html')
-        self.typical_filepath = abspath(TEST_COLLATERAL_DIRPATH, 'typical.html')
+        self.flat_filepath = abspath(constants.TEST_COLLATERAL_DIRPATH, 'flat.html')
+        self.index_filepath = abspath(constants.TEST_COLLATERAL_DIRPATH, 'index.html')
+        self.typical_filepath = abspath(constants.TEST_COLLATERAL_DIRPATH, 'typical.html')
 
         with open(self.flat_filepath, 'r', encoding='utf-8') as r:
             self.flat = r.read()

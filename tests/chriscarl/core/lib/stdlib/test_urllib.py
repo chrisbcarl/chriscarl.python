@@ -23,11 +23,12 @@ import unittest
 
 # project imports (expected to work)
 from chriscarl.core import constants
-from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.lib.stdlib.os import abspath, as_posix
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
 import chriscarl.core.lib.stdlib.urllib as lib
+from chriscarl.core.lib.stdlib.io import read_text_file
 
 SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_urllib.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -59,9 +60,9 @@ class TestCase(UnitTest):
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
-            (lib.create_internet_shortcut, (self.site_url0, '/temp')),
-            (lib.create_internet_shortcut, (self.site_url1, '/temp')),
-            (lib.create_internet_shortcut, (self.site_url2, '/temp')),
+            (lib.create_internet_shortcut, (self.site_url0, ), dict(dirpath='/temp')),
+            (lib.create_internet_shortcut, (self.site_url1, ), dict(dirpath='/temp')),
+            (lib.create_internet_shortcut, (self.site_url2, ), dict(dirpath='/temp')),
         ]
         controls = [
             abspath('/temp/google.com.url'),
@@ -75,12 +76,12 @@ class TestCase(UnitTest):
             (lib.get_basename, (self.site_url0)),
             (lib.get_basename, (self.site_url1)),
             (lib.get_basename, (self.site_url2)),
-            (lib.get_filepath, (self.site_url0, '/temp'), dict(flat=True)),
-            (lib.get_filepath, (self.site_url1, '/temp'), dict(flat=True)),
-            (lib.get_filepath, (self.site_url2, '/temp'), dict(flat=True)),
-            (lib.get_filepath, (self.site_url0, '/temp'), dict(flat=False)),
-            (lib.get_filepath, (self.site_url1, '/temp'), dict(flat=False)),
-            (lib.get_filepath, (self.site_url2, '/temp'), dict(flat=False)),
+            (lib.get_filepath, (self.site_url0, ), dict(dirpath='/temp', flat=True)),
+            (lib.get_filepath, (self.site_url1, ), dict(dirpath='/temp', flat=True)),
+            (lib.get_filepath, (self.site_url2, ), dict(dirpath='/temp', flat=True)),
+            (lib.get_filepath, (self.site_url0, ), dict(dirpath='/temp', flat=False)),
+            (lib.get_filepath, (self.site_url1, ), dict(dirpath='/temp', flat=False)),
+            (lib.get_filepath, (self.site_url2, ), dict(dirpath='/temp', flat=False)),
         ]
         controls = [
             'google.com',
@@ -96,8 +97,8 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_2(self):
-        tpl0 = lib.download(self.file_url0, '/temp', flat=False)
-        tpl1 = lib.download(self.file_url1, '/temp', flat=False)
+        tpl0 = lib.download(self.file_url0, dirpath='/temp', flat=False)
+        tpl1 = lib.download(self.file_url1, dirpath='/temp', flat=False)
         variables = [
             (lambda x: x[0], (tpl0, )),
             (lambda x: x[0], (tpl1, )),
@@ -108,7 +109,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-        res, failures = lib.download_pool([self.file_url0, self.file_url1], '/temp', flat=False)
+        res, failures = lib.download_pool([self.file_url0, self.file_url1], dirpath='/temp', flat=False)
         variables = [
             (set, res),
             (int, failures),
@@ -120,10 +121,20 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
         variables = [
-            (lib.download_pool, ([self.file_url2], '/temp'), dict(flat=True)),
+            (lib.download_pool, ([self.file_url2], ), dict(dirpath='/temp', flat=True)),
         ]
         controls = [
             ([abspath('/temp/Cityvarvet_January_2022_10.jpg')], 0),  # 0 failures
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+        this_file_uri = f'file:///{__file__}'
+        this_file_content = read_text_file(__file__)
+        variables = [
+            (lib.download, (this_file_uri, ), dict(flat=True, as_body=True)),
+        ]
+        controls = [
+            (this_file_content, this_file_uri),
         ]
         self.assert_null_hypothesis(variables, controls)
 

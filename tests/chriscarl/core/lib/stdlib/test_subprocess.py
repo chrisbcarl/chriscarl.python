@@ -18,6 +18,7 @@ import os
 import sys
 import logging
 import unittest
+import subprocess
 
 # third party imports
 
@@ -61,6 +62,16 @@ class TestCase(UnitTest):
     def test_case_1_launch_filepath(self):
         lib.launch_editor(__file__)
 
+    def test_case_2_kill(self):
+        popen = subprocess.Popen([sys.executable])
+        variables = [
+            (lib.kill, (popen.pid, )),
+        ]
+        controls = [
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -68,5 +79,6 @@ if __name__ == '__main__':
 
     tc.test_case_0_run()
     tc.test_case_1_launch_filepath()
+    tc.test_case_2_kill()
 
     tc.tearDown()

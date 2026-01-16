@@ -10,6 +10,7 @@ core.lib.stdlib.subprocess is mostly wrappers around handling subprocesses.
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-16 - core.lib.stdlib.subprocess - added kill
     2024-11-27 - core.lib.stdlib.subprocess - added run and launch_editor
     2024-11-25 - core.lib.stdlib.subprocess - initial commit
 '''
@@ -56,3 +57,12 @@ def launch_editor(filepath):
     # https://stackoverflow.com/questions/39453951/open-file-at-specific-line-in-vscode
     # TODO: code --goto "<filepath>:<linenumber>:<x-coordinates>"
     subprocess.Popen(['code', '--goto', filepath], shell=True)
+
+
+def kill(pid):
+    # type: (int) -> int
+    if sys.platform == 'win32':
+        exit_code = subprocess.Popen(['taskkill', '/pid', str(pid), '/f', '/t'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
+    else:
+        exit_code = subprocess.Popen(['kill', str(pid), '-9'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
+    return exit_code
