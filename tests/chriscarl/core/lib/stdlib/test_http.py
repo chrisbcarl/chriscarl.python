@@ -50,7 +50,7 @@ class TestCase(UnitTest):
 
     def setUp(self):
         self.server = subprocess.Popen([sys.executable, '-m', lib.__name__])
-        self.url = f'http://{lib.HOSTNAME}:{lib.PORT}'
+        self.server_url = f'http://{lib.HOSTNAME}:{lib.PORT}'
         return super().setUp()
 
     def tearDown(self):
@@ -59,8 +59,8 @@ class TestCase(UnitTest):
         return super().tearDown()
 
     # @unittest.skip('lorem ipsum')
-    def test_case_0_download_root(self):
-        res = download(self.url, as_body=True)
+    def test_case_0(self):
+        res = download(self.server_url, as_body=True)
         variables = [
             (lambda x: x[0], (res, )),
         ]
@@ -74,6 +74,6 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_download_root()
+    tc.test_case_0()
 
     tc.tearDown()

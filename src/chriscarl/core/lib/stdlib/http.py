@@ -9,6 +9,10 @@ Description:
 core.lib.stdlib.http is not really about adding stuff, more like demoing http.server and customizing it to demo server requirements
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
+Examples:
+    python -m chriscarl.core.lib.stdlib.http
+    python -c "from chriscarl.core.lib.stdlib.urllib import get; print(get('http://localhost:8000').body)"
+
 Updates:
     2026-01-16 - core.lib.stdlib.http - initial commit
 '''
@@ -21,6 +25,7 @@ import logging
 import json
 import datetime
 import argparse
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Optional, Any, Dict
 
@@ -48,15 +53,34 @@ MAX_BYTES = 10 * 1024 * 1024  # 10MB
 
 class ExampleRequestHandler(BaseHTTPRequestHandler):
 
-    def respond(self, status_code=200, headers=None, **body_kwargs):
-        # type: (int, Optional[Dict[str, str]], Any) -> None
+    def respond(self, status_code=200, headers=None, drained=False, **body_kwargs):
+        # type: (int, Optional[Dict[str, str]], bool, Any) -> None
         '''
         Description:
             Not overloaded, custom func that lumps all the usual response stuff together
         '''
+        LOGGER.info('%s %s:%d', self.command, *self.client_address)
+        LOGGER.debug('%s %s:%d, %s', self.command, *self.client_address, json.dumps(dict(self.headers), indent=2))
+        payload = {}
+        if not drained:
+            try:
+                # NOTE: this section demonstrates that its all bytes anyway.
+                #   if you have a better encoding mechanism...
+                #   JUST DO THAT...
+                raw = self.drain()
+                if raw:
+                    # take a b'key=value' => [('key', 'value')]
+                    content = urllib.parse.parse_qsl(raw.decode('utf-8'))
+                    payload.update(content)
+            except Exception:
+                LOGGER.info('%s %s:%d - 400 - Bad Request, could not read content as json', self.command, *self.client_address, exc_info=True)
+                self.send_error(400, message='Bad Request', explain='could not read content as json')
+                return
+
         self.send_response(status_code)
 
-        body_dict = dict(now=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), **body_kwargs)
+        # %H:%M:%S - for the test cases, just day is fine, that way you can compare put to post and they're the same
+        body_dict = dict(now=datetime.datetime.now().strftime('%Y-%m-%d'), payload=payload, **body_kwargs)
         body_text = json.dumps(body_dict).encode("utf-8")
 
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -68,8 +92,8 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
 
         self.wfile.write(body_text)
 
-    def route(self, headers=None, **body_kwargs):
-        # type: (Optional[Dict[str, str]], Any) -> None
+    def route(self, headers=None, drained=False, **body_kwargs):
+        # type: (Optional[Dict[str, str]], bool, Any) -> None
         '''
         Description:
             Not overloaded, custom func that lumps all the usual stuff together.
@@ -81,11 +105,12 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
         path = tokens[0]
         query = tokens[1] if len(tokens) > 1 else None
         if not path or path == '/':
-            self.respond(status_code=200, headers=headers, path=path, query=query, **body_kwargs)
+            self.respond(status_code=200, headers=headers, drained=drained, path=path, query=query, **body_kwargs)
         else:
-            self.respond(status_code=404, headers=headers, error=f'{path} invalid!', query=query, **body_kwargs)
+            self.respond(status_code=404, headers=headers, drained=drained, error=f'{path} invalid!', query=query, **body_kwargs)
 
-    def drain(self, max_bytes=MAX_BYTES) -> None:
+    def drain(self, max_bytes=MAX_BYTES):
+        # type: (int) -> bytes
         '''
         Description:
             ChatGPT: "Read and discard any request body (if Content-Length is provided), so clients that reuse connections don't get stuck."
@@ -95,14 +120,14 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
         '''
         length = self.headers.get("Content-Length")
         if not length:
-            return
+            return bytes()
         try:
             n = int(length)
         except ValueError:
-            return
+            return bytes()
         if n <= 0:
-            return
-        self.rfile.read(min(n, max_bytes))
+            return bytes()
+        return self.rfile.read(min(n, max_bytes))
 
     def do_GET(self):
         body = '<p>hello, world!</p>'
@@ -123,7 +148,7 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self.route()
 
-    def do_OPTIONS(self) -> None:
+    def do_OPTIONS(self):
         # type: () -> None
         '''
         Description:
@@ -139,7 +164,7 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": self.headers.get("Access-Control-Request-Headers", "Content-Type"),
         }
-        self.route(headers=extra)
+        self.route(headers=extra, drained=True)
 
     def send_error(self, code, message=None, explain=None):
         # type: (int, Optional[str], Optional[str]) -> None
@@ -160,7 +185,7 @@ class ExampleRequestHandler(BaseHTTPRequestHandler):
         Returns:
             None
         '''
-        LOGGER.debug(format, *args)
+        LOGGER.info(format, *args)
 
 
 HOSTNAME = '127.0.0.1'

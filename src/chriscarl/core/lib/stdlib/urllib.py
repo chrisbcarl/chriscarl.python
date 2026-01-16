@@ -9,8 +9,13 @@ Description:
 core.lib.stdlib.urllib is where I stash most of my learnings on how to download things w/o requests
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
+Examples:
+    python -m chriscarl.core.lib.stdlib.http
+    python -c "from chriscarl.core.lib.stdlib.urllib import get; print(get('http://localhost:8000').body)"
+
 Updates:
     2026-01-16 - core.lib.stdlib.urllib - download can return just the text now and handle file:///
+                 core.lib.stdlib.urllib - added RESTful methods
     2026-01-13 - core.lib.stdlib.urllib - fixed bugs where the return type wasnt tuple and wasnt tested as tuple
     2026-01-07 - core.lib.stdlib.urllib - download augmented to deal with edge cases like Wikipedia of all places
     2026-01-06 - core.lib.stdlib.urllib - initial commit
@@ -25,14 +30,17 @@ import re
 import time
 import random
 import ssl
+import json
 import threading
 import contextlib
+import dataclasses
 import multiprocessing
 import concurrent.futures
 import urllib.error
 import urllib.request
-from urllib.parse import urljoin, urlparse
-from typing import List, Optional, Callable, Tuple
+import urllib.parse
+from urllib.parse import urlparse
+from typing import List, Optional, Callable, Tuple, Dict, Any
 
 # third party imports
 
@@ -306,3 +314,93 @@ def download_pool(urls, dirpath=None, flat=False, skip_exist=False, skip_sleep=F
                 LOGGER.error('%d / %d - %s failed!', finished, len(future_to_url), url)
                 LOGGER.debug('%d / %d - %s failed!', finished, len(future_to_url), url, exc_info=True)
     return results, failures
+
+
+@dataclasses.dataclass
+class Response():
+    method: str = ''
+    url: str = ''
+    status_code: int = -1
+    headers: dict = dataclasses.field(default_factory=lambda: {})
+    body: str = ''
+    __json = None
+
+    @property
+    def json(self):
+        # type: () -> dict
+        if not self.__json:
+            self.__json = json.loads(self.body)
+        return self.__json
+
+    def to_dict(self):
+        return dataclasses.asdict(self)
+
+    def __str__(self):
+        return f'{self.method} {self.url} - {self.status_code}'
+
+    def __eq__(self, value):
+        # type: (Any) -> bool
+        if not isinstance(value, Response):
+            return False
+        else:
+            return self.to_dict() == value.to_dict()
+
+
+def request(method, url, data=None, headers=None, context=SSL_BASIC_CTX):
+    # type: (str, str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    LOGGER.debug('%s %s', method, url)
+    headers = headers or {}
+    data = data or {}
+    if not isinstance(data, dict):
+        raise TypeError(f'data must be of type {dict}, provided {type(data)}!')
+    # take {'key': 'value'} => 'key=value'
+    # NOTE: this section demonstrates that its all bytes anyway.
+    #   if you have a better encoding mechanism...
+    #   JUST DO THAT...
+    data_encoded = urllib.parse.urlencode(data).encode('utf-8') if data else None
+    req = urllib.request.Request(url, data=data_encoded, headers=headers, method=method)
+    with urllib.request.urlopen(req, context=context) as r:
+        resp = Response(
+            method=method,
+            url=url,
+            status_code=r.code,
+            headers=dict(r.headers),
+            body=r.read().decode('utf-8'),
+        )
+    LOGGER.debug(resp)
+    return resp
+
+
+def get(url, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('GET', url, headers=headers, context=context)
+
+
+def post(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('POST', url, data=data, headers=headers, context=context)
+
+
+def put(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('PUT', url, data=data, headers=headers, context=context)
+
+
+def delete(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('DELETE', url, data=data, headers=headers, context=context)
+
+
+def options(url, data=None, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('OPTIONS', url, data=data, headers=headers, context=context)
+
+
+def patch(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('PATCH', url, data=data, headers=headers, context=context)
+
+
+def head(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
+    return request('HEAD', url, data=data, headers=headers, context=context)

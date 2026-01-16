@@ -72,7 +72,7 @@ def fix_constants(module):
     '''
     global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
     if not isinstance(module, ModuleType):
-        raise ValueError(f'module must be of type {ModuleType}, provided {type(module)}!')
+        raise TypeError(f'module must be of type {ModuleType}, provided {type(module)}!')
     module_str = module.__name__
     module_tokens = module_str.split('.')
     if len(module_tokens) == 1:

@@ -43,7 +43,8 @@
                 // "audit", "relpath",
                 // "audit", "tdd",
                 // "audit", "banned", "--words-additional", "fuck", "shit",
-                "audit", "stubs",
+                "audit",
+                "stubs",
                 //
                 "--log-level",
                 "DEBUG",
@@ -74,6 +75,17 @@
                 "--log-level",
                 "DEBUG",
             ]
+        },
+        {
+            "name": "[module] http",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chriscarl.core.lib.stdlib.http",
+            "args": [
+                // "--log-level",
+                // "DEBUG",
+            ],
+            "justMyCode": true,
         },
     ]
 }

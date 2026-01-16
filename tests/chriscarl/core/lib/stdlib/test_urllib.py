@@ -18,6 +18,8 @@ import os
 import sys
 import logging
 import unittest
+import subprocess
+import urllib.error
 
 # third party imports
 
@@ -29,6 +31,8 @@ from chriscarl.core.lib.stdlib.unittest import UnitTest
 # test imports
 import chriscarl.core.lib.stdlib.urllib as lib
 from chriscarl.core.lib.stdlib.io import read_text_file
+from chriscarl.core.lib.stdlib.subprocess import kill
+from chriscarl.core.lib.stdlib import http
 
 SCRIPT_RELPATH = 'tests/chriscarl/core/lib/stdlib/test_urllib.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -52,9 +56,14 @@ class TestCase(UnitTest):
         self.file_url0 = 'https://samplefile.com/static/samples/document/txt/txt_sample_file_1MB.txt'
         self.file_url1 = 'https://google.com'
         self.file_url2 = 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Cityvarvet_January_2022_10.jpg'
+
+        self.server = subprocess.Popen([sys.executable, '-m', http.__name__])
+        self.server_url = f'http://{http.HOSTNAME}:{http.PORT}'
         return super().setUp()
 
     def tearDown(self):
+        self.server.kill()
+        kill(self.server.pid)
         return super().tearDown()
 
     # @unittest.skip('lorem ipsum')
@@ -138,13 +147,45 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3(self):
+        res = lib.download(self.server_url, as_body=True)
+        variables = [
+            (lambda x: x[0], (res, )),
+        ]
+        controls = [
+            '<p>hello, world!</p>',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+        # all return same response
+        args = (self.server_url, {'hello': 'world'})
+        kwargs = dict(headers={'hello': 'world'}, context=lib.SSL_BASIC_CTX)
+        response_post = lib.post(*args, **kwargs)
+        response_put = lib.put(*args, **kwargs)
+        response_delete = lib.delete(*args, **kwargs)
+
+        self.assertEqual(response_post.json['payload'], response_post.json['payload'])
+        self.assertEqual(response_post.json['payload'], response_put.json['payload'])
+        self.assertEqual(response_post.json['payload'], response_delete.json['payload'])
+
+        # not the same response
+        args = (self.server_url, {'hello': 'world'})
+        kwargs = dict(headers={'hello': 'world'})
+        response_options = lib.options(*args, **kwargs)
+        self.assertTrue(response_post != response_options)
+
+        # all not implemented - code 501
+        self.assertRaises(urllib.error.HTTPError, lib.patch, *args, **kwargs)
+        self.assertRaises(urllib.error.HTTPError, lib.head, *args, **kwargs)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
-    tc.test_case_1()
-    tc.test_case_2()
+    # tc.test_case_0()
+    # tc.test_case_1()
+    # tc.test_case_2()
+    tc.test_case_3()
 
     tc.tearDown()
