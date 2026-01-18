@@ -48,6 +48,10 @@ addopts = [
 ]
 
 
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/dist/typing"
+
+
 [[tool.mypy.overrides]]
 module = [
     'parameterized',
