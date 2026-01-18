@@ -85,6 +85,10 @@ def fix_constants(module):
     if not hasattr(module, '__file__'):
         raise RuntimeError(f'{module_str!r} cannot fix_constants on a namespace module that doesnt have a __file__!')
 
+    # NOTE: this will never invoke at this point, but it shuts up the linters...
+    if not module.__file__:
+        raise RuntimeError('module.__file__')
+
     if os.path.basename(module.__file__) == '__init__.py':
         module_dirpath = os.path.dirname(module.__file__)
     else:
