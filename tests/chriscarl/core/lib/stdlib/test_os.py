@@ -84,7 +84,7 @@ class TestCase(UnitTest):
     def test_case_2_walk(self):
         abspaths = [lib.abspath(self.tempdir, relfile) for relfile in self.relpaths]
         basenames = [os.path.basename(relfile) for relfile in self.relpaths]
-        ignore_dirs = ['ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache']
+        ignore_dirs = ['docs', 'ignoreme', 'node_modules', '.git', '__pycache__', 'build', 'dist', 'venv', '.venv', '.pytest_cache']
         extensions = ['.py']
 
         ignore = list(lib.walk('./', extensions=extensions, ignore=ignore_dirs, include=None))

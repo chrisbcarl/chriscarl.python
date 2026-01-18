@@ -28,6 +28,7 @@ from types import ModuleType
 
 # project imports
 import chriscarl
+import chriscarl.core.lib.stdlib
 
 SCRIPT_RELPATH = 'chriscarl/core/constants.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -54,6 +55,14 @@ NOW = datetime.datetime.now()
 DATE = NOW.strftime('%Y-%m-%d')
 TIME = NOW.strftime('%H:%M:%S.%f')
 SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf55947b'
+NAMESPACED_MODULES = [
+    'chriscarl',
+    'chriscarl.tools',
+    'chriscarl.tools.shed',
+    'chriscarl.core',
+    'chriscarl.core.lib',
+    'chriscarl.core.lib.third',
+]
 
 TEMP_DIRPATH = '/temp'
 if sys.platform != 'win32':
@@ -85,9 +94,8 @@ def fix_constants(module):
     if not hasattr(module, '__file__'):
         raise RuntimeError(f'{module_str!r} cannot fix_constants on a namespace module that doesnt have a __file__!')
 
-    # NOTE: this will never invoke at this point, but it shuts up the linters...
-    if not module.__file__:
-        raise RuntimeError('module.__file__')
+    if not module.__file__:  # namespaced modules trigger this
+        return
 
     if os.path.basename(module.__file__) == '__init__.py':
         module_dirpath = os.path.dirname(module.__file__)
@@ -106,4 +114,4 @@ def fix_constants(module):
         raise RuntimeError('constants is badly configured, not sure how?')
 
 
-fix_constants(sys.modules['chriscarl.core.constants'])
+fix_constants(chriscarl.core.lib.stdlib)

@@ -45,7 +45,7 @@ from typing import List, Union, Tuple, Callable, Any, Optional, Dict
 
 # project imports
 import chriscarl
-from chriscarl.core.constants import DATE, REPO_DIRPATH
+from chriscarl.core.constants import DATE, REPO_DIRPATH, NAMESPACED_MODULES
 from chriscarl.core.functors.python import run_func_args_kwargs, get_legal_python_name
 from chriscarl.core.functors.parse.pytest_coverage import PytestCoverage
 from chriscarl.core.lib.stdlib.ast import merge_python
@@ -493,6 +493,8 @@ def audit_tdd(
 
         # non src/ convention
         for module_name, filepath in walk_dirpath_for_module_files(module_name):
+            if module_name in NAMESPACED_MODULES:
+                continue
             tokens = module_name.split('.')
             tokens[-1] = 'test_{}'.format(tokens[-1])
             test_module_tokens = [tests_dirname] + tokens
@@ -502,6 +504,8 @@ def audit_tdd(
             src_to_file[module_name] = filepath
         # src convention
         for module_name, filepath in walk_dirpath_for_module_files('src/{}'.format(module_name)):
+            if module_name in NAMESPACED_MODULES:
+                continue
             tokens = module_name.split('.')
             tokens[-1] = 'test_{}'.format(tokens[-1])
             test_module_tokens = [tests_dirname] + tokens
