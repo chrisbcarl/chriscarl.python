@@ -10,6 +10,7 @@ core.constants are useful to have actual constants
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-17 - core.constants - BUG: fixed problems caused by __init__.py and removed circular import issue
     2026-01-13 - core.constants - added fix_constants to deal with namespace development
     2026-01-07 - core.constants - updated to deal with change to namespace rather than regular module.
     2024-11-22 - core.constants - initial commit
@@ -72,7 +73,7 @@ def fix_constants(module):
     '''
     global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
     if not isinstance(module, ModuleType):
-        raise TypeError(f'module must be of type {ModuleType}, provided {type(module)}!')
+        raise TypeError(f"'module' must be of type {ModuleType}, provided {type(module)}!")
     # isinstance_raise(module, ModuleType)  # NOTE: cannot do this, causes circular imports...
     module_str = module.__name__
     module_tokens = module_str.split('.')
@@ -84,7 +85,10 @@ def fix_constants(module):
     if not hasattr(module, '__file__'):
         raise RuntimeError(f'{module_str!r} cannot fix_constants on a namespace module that doesnt have a __file__!')
 
-    module_dirpath = module.__file__
+    if os.path.basename(module.__file__) == '__init__.py':
+        module_dirpath = os.path.dirname(module.__file__)
+    else:
+        module_dirpath = module.__file__
     ups = ['../'] * (len(module_tokens) - 1)
     module_dirpath = os.path.abspath(os.path.join(module_dirpath, *ups))
 
@@ -94,6 +98,8 @@ def fix_constants(module):
     TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
     TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
     PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
+    if PIP_DEVELOP_MODE and not os.path.isdir(TEST_COLLATERAL_DIRPATH):
+        raise RuntimeError('constants is badly configured, not sure how?')
 
 
 fix_constants(sys.modules['chriscarl.core.constants'])

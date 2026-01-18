@@ -87,5 +87,15 @@
             ],
             "justMyCode": true,
         },
+        {
+            "name": "[pytest]",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "--cov=chriscarl", "tests", "--cov-report", "term-missing"
+            ],
+            "justMyCode": false,
+        },
     ]
 }
