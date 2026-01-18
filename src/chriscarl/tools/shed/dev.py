@@ -378,8 +378,7 @@ def audit_manifest(no_modify=False, no_verify=False):
 
         new_content = lines[0:indexes[0]] + ['# ###\n'] + tokens + lines[indexes[1]:]
         LOGGER.info('writing %d lines of filepath content', len(tokens))
-        with open(manifest_filepath, 'w', encoding='utf-8') as w:
-            w.write('\n'.join(new_content))
+        write_text_file(manifest_filepath, '\n'.join(new_content))
 
     # check each of the DIRPATH_* and FILEPATH_* actually exist...
     if no_verify:
@@ -455,8 +454,7 @@ def audit_relpath(dirpath=os.getcwd(), extensions=DEFAULT_EXTENSIONS, included_d
                     if not dry:
                         LOGGER.info('replacing %s %r -> %r', '{} [line:{}; char:{}]: '.format(basename, lineno, charno), original_preview, replacement_preview)
                         new_contents = SCRIPT_RELPLATH_REGEX.sub(replacement, contents)
-                        with open(filepath, 'w') as w:
-                            w.write(new_contents)
+                        write_text_file(filepath, new_contents)
         LOGGER.info('%d changes', changes)
         if dry and changes > 0:
             LOGGER.warning('remember to remove --dry if youd like to flush these changes.')

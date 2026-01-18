@@ -28,7 +28,8 @@ from typing import List, Optional
 from chriscarl.core.constants import TEMP_DIRPATH
 from chriscarl.core.lib.stdlib.logging import NAME_TO_LEVEL, configure_ez
 from chriscarl.core.lib.stdlib.argparse import ArgparseNiceFormat
-from chriscarl.core.lib.stdlib.os import abspath, make_dirpath
+from chriscarl.core.lib.stdlib.os import abspath
+from chriscarl.core.lib.stdlib.io import write_text_file
 from chriscarl.tools.shed.constants import IGNORED_DIRS
 
 SCRIPT_RELPATH = 'chriscarl/tools/lf.py'
@@ -139,8 +140,7 @@ def main():
                 # unichars = len([ord(char) > 255 for char in content])
                 # if unichars / chars > args.threshold:
                 LOGGER.debug(filepath)
-                with open(filepath, 'w', encoding='utf-8', newline='\n') as w:
-                    w.write(content)
+                write_text_file(filepath, content)
 
                 replacements += 1
             except UnicodeDecodeError:

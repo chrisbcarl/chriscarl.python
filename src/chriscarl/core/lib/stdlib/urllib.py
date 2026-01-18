@@ -47,7 +47,7 @@ from typing import List, Optional, Callable, Tuple, Dict, Any
 # project imports
 from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
-from chriscarl.core.lib.stdlib.io import read_text_file, read_text_file_try
+from chriscarl.core.lib.stdlib.io import read_text_file, read_text_file_try, write_text_file
 from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/urllib.py'
@@ -100,8 +100,7 @@ def create_internet_shortcut(url, dirpath):
     internet_shortcut_filepath = abspath(dirpath, f'{basename}.url')
     internet_shortcut = f'''[InternetShortcut]
 URL={url}'''
-    with open(internet_shortcut_filepath, 'w', encoding='utf-8') as w:
-        w.write(internet_shortcut)
+    write_text_file(internet_shortcut_filepath, internet_shortcut)
 
     return internet_shortcut_filepath
 
