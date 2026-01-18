@@ -20,7 +20,7 @@ import sys
 import logging
 import re
 import json
-from typing import Generator, Any
+from typing import Generator, Any, Dict
 
 # third party imports
 
@@ -70,7 +70,7 @@ def parenthesis_extract(text, open_char='{', close_char='}'):
 
 
 def lines_to_dict(text):
-    # type: (str) -> dict
+    # type: (str) -> Dict[str, str]
     '''
     Description:
         Take text that looks like
@@ -106,7 +106,7 @@ def lines_to_dict(text):
 
 
 def lines_to_headers(text):
-    # type: (str) -> dict
+    # type: (str) -> Dict[str, str]
     '''
     Description:
         Edge and Chrome do this thing where you have to copy headers as new lines. Really annoying.

@@ -94,9 +94,9 @@ accept-encoding
 gzip, deflate, br, zstd
         '''
         variables = [
-            (lib.lines_to_dict, (lines0, )),
-            (lib.lines_to_headers, (lines1, )),
-            (lib.lines_to_headers, (lines2, )),
+            (lib.lines_to_dict, lines0),
+            (lib.lines_to_headers, lines1),
+            (lib.lines_to_headers, lines2),
         ]
         controls = [
             {

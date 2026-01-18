@@ -137,7 +137,7 @@ class TestCase(UnitTest):
         anchors = dom.get_elements_by_tag('a')
 
         variables = [
-            (len, (anchors)),
+            (len, anchors),
         ]
         controls = [
             25,
