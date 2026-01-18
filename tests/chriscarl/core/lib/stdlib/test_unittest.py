@@ -55,6 +55,8 @@ class TestCase(UnitTest):
             (sum, ([1, 2, 3], ), {}),
             (len, ([1, 2, 3]), {}),
             (len, 1),
+            (lambda: 'this is true'),
+            (lambda: ''),  # this is false
         ]
         controls = [
             None,
@@ -62,6 +64,8 @@ class TestCase(UnitTest):
             6,
             3,
             TypeError,
+            True,
+            False,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -69,13 +73,14 @@ class TestCase(UnitTest):
         variables = [
             (lib.UnitTest.assert_subset, ([1, 2, 3], [1, 2, 3, 4])),
             (lib.UnitTest.assert_subset, ('abc', 'dcba')),
+            (lib.UnitTest.assert_subset, ('abc', ['a', 'b', 'c'])),
         ]
         controls = [
             True,
             True,
+            AssertionError,
         ]
         self.assert_null_hypothesis(variables, controls)
-        self.assertRaises(AssertionError, lib.UnitTest.assert_subset, 'abc', ['a', 'b', 'c'])
 
     def test_case_2_infrastructure(self):
         bad_length_variables = [

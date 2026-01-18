@@ -201,7 +201,14 @@ class TestCase(UnitTest):
             pass
 
     def test_case_7_isinstance_raise(self):
-        self.assertRaises(TypeError, lib.isinstance_raise, 1, bool)
+        variables = [
+            (lib.isinstance_raise, (1, bool)),
+        ]
+        controls = [
+            TypeError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
         parameter_name = 1
         try:
             lib.isinstance_raise(parameter_name, bool)

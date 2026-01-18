@@ -169,23 +169,28 @@ class TestCase(UnitTest):
         self.assertEqual(response_post.json['payload'], response_delete.json['payload'])
 
         # not the same response
-        args = (self.server_url, {'hello': 'world'})
-        kwargs = dict(headers={'hello': 'world'})
         response_options = lib.options(*args, **kwargs)
         self.assertTrue(response_post != response_options)
 
         # all not implemented - code 501
-        self.assertRaises(urllib.error.HTTPError, lib.patch, *args, **kwargs)
-        self.assertRaises(urllib.error.HTTPError, lib.head, *args, **kwargs)
+        variables = [
+            (lib.patch, args, kwargs),
+            (lib.head, args, kwargs),
+        ]
+        controls = [
+            urllib.error.HTTPError,
+            urllib.error.HTTPError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    # tc.test_case_0()
-    # tc.test_case_1()
-    # tc.test_case_2()
+    tc.test_case_0()
+    tc.test_case_1()
+    tc.test_case_2()
     tc.test_case_3()
 
     tc.tearDown()

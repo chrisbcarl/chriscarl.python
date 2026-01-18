@@ -10,6 +10,7 @@ core.lib.stdlib.unittest includes stuff I want all unit tests to have access to
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-17 - core.lib.stdlib.unittest - added True as equivalent if the experiment is boolable
     2025-01-01 - core.lib.stdlib.unittest - FIX: stuff that yields generators now will have to answer for their exception crimes
     2024-12-09 - core.lib.stdlib.unittest - UnitTest now configures with my logging by default, so much nicer.
     2024-11-26 - core.lib.stdlib.unittest - added UnitTest as a class
@@ -49,8 +50,8 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 class UnitTest(unittest.TestCase):
-    tempdir = None
-    tempfile = None
+    tempdir = ''
+    tempfile = ''
 
     def setUp(self):
         from chriscarl.core.lib.stdlib.logging import configure
@@ -86,7 +87,7 @@ class UnitTest(unittest.TestCase):
             >>> controls = [6, 3, TypeError]
             >>> assert_null_hypothesis(variables, controls)
         Arguments:
-            variables: List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]]
+            variables: List[Union[Callable, Tuple[Callable, Union[list, tuple, Any, None]], Tuple[Callable, Union[list, tuple, Any, None], dict]]]
                 basically:
                     (func)
                     (func, arg)
@@ -99,18 +100,18 @@ class UnitTest(unittest.TestCase):
                 set this to get an input pause so that you can "catch yourself" kind of like print debugging.
         '''
         try:
-            isinstance_raise(variables, List[Union[Callable, Tuple[Callable, Union[tuple, Any, None]], Tuple[Callable, Union[tuple, Any, None], dict]]])
+            isinstance_raise(variables, T_FUNC_ARGS_KWARGS)
             isinstance_raise(variables, List[Any])
 
             if len(variables) != len(controls):
                 raise ValueError('len(variables) != len(controls): {} != {}'.format(len(variables), len(controls)))
 
-            variables = conform_func_args_kwargs(variables)
-            for e, tpl in enumerate(variables):
+            conformed_variables = conform_func_args_kwargs(variables)
+            for e, tpl in enumerate(conformed_variables):
                 func, args, kwargs = tpl
                 control = controls[e]
                 inv_str = invocation_string(func, args=args, kwargs=kwargs)
-                status = 'experiment {} / {} - {}'.format(e, len(variables) - 1, inv_str)
+                status = 'experiment {} / {} - {}'.format(e, len(conformed_variables) - 1, inv_str)
 
                 # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
                 LOGGER.debug(status, stacklevel=2)
@@ -146,7 +147,10 @@ class UnitTest(unittest.TestCase):
                     if inspect.isgenerator(experiment) or isinstance(experiment, (map, filter)):
                         LOGGER.debug('{} encountered a generator... expanding.'.format(status))
                         experiment = list(experiment)  # expand it out
-                    assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}'.format(status, control, experiment)
+                    if isinstance(control, bool) and not isinstance(experiment, bool):  # exp = 'string', contr = True
+                        assert bool(experiment) == control, '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}'.format(status, control, experiment)
+                    else:
+                        assert experiment == control, '{} failed to accept null hypothesis (control != experiment): {!r} != {!r}'.format(status, control, experiment)
                     # stacklevel has a bug in it somewhere such that lazy formatting isnt correctly using THIS frame, but the stacklevel frame
                     LOGGER.info('{} PASS'.format(status), stacklevel=2)
             return True
@@ -171,7 +175,7 @@ class UnitTest(unittest.TestCase):
         # (Iterable, Iterable) -> bool
         '''
         Description:
-            assert that all of the elements of the left are in the elements on the left
+            assert that all of the elements of the left are in the elements on the right
         Arguments:
             subset: Iterable
             superset: Iterable

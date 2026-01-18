@@ -61,7 +61,13 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_1_FunctionSpecification(self):
-        self.assertRaises(ValueError, lib.FunctionSpecification.get, 1)
+        variables = [
+            (lib.FunctionSpecification.get, 1),
+        ]
+        controls = [
+            ValueError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
 
         def positional(a, b):
             pass
@@ -121,8 +127,8 @@ class TestCase(UnitTest):
         def run():
             return lib.get_caller_file_lineno()[1]
 
-        self.assertEqual(lib.get_this_file_lineno()[1], 124)
-        self.assertEqual(run(), 125)
+        self.assertEqual(lib.get_this_file_lineno()[1], 130)
+        self.assertEqual(run(), 131)
 
 
 if __name__ == '__main__':

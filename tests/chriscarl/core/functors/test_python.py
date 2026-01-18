@@ -105,10 +105,10 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_2_hasgetset(self):
-        self.assertRaises(ValueError, lib.hasattr_cmp, 'whatever', 1)
-        self.assertRaises(ValueError, lib.getattr_cmp, 'whatever', 1)
-        self.assertRaises(AttributeError, lib.setattr_deep, self.a, 'whatever.__class__', 1)
         variables = [
+            (lib.hasattr_cmp, ('whatever', 1)),
+            (lib.getattr_cmp, ('whatever', 1)),
+            (lib.setattr_deep, (self.a, 'whatever.__class__', 1)),
             (lib.hasattr_deep, (self.a, '__class__.__name__'), {}),
             (lib.hasattr_deep, (self.a, '__class__.__nope__'), {}),
             (lib.hasattr_cmp, ('val', self.a, self.b, self.c), {}),
@@ -124,6 +124,9 @@ class TestCase(UnitTest):
             (lib.getattr_deep, (self, 'a.b.c.d.e', 'weird default 3rd argument'), {}),
         ]
         controls = [
+            ValueError,
+            ValueError,
+            AttributeError,
             True,
             False,
             (True, True),  # a has "val", [b, c] does all have "val"
