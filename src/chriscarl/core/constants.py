@@ -27,6 +27,7 @@ from types import ModuleType
 
 # project imports
 import chriscarl
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/constants.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -71,8 +72,7 @@ def fix_constants(module):
         None
     '''
     global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
-    if not isinstance(module, ModuleType):
-        raise TypeError(f'module must be of type {ModuleType}, provided {type(module)}!')
+    isinstance_raise(module, ModuleType)
     module_str = module.__name__
     module_tokens = module_str.split('.')
     if len(module_tokens) == 1:

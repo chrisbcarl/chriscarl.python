@@ -150,12 +150,16 @@ def isof(obj, *typings):
 def isinstance_raise(obj, *typings, msg=''):
     # type: (Any, T_TYPING, str) -> bool
     # TODO: as_list(1, List[str]) needs to have nicer output message saying elements within the datastruct are no good, rather than the whole:
-    #       TypeError: provided <class 'list'> for 'obj_or_list', requires: typing.List[str]
+    #       TypeError: 'obj_or_list' must be of type typing.List[str], got <class 'list'>
     from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
     var_name = get_variable_name_lineno(obj)[0]
 
     res = isof(obj, *typings)
     if not res:
-        msg = msg or 'provided {} for {!r}, requires: {}'.format(type(obj), var_name, typings if len(typings) > 1 else typings[0])
+        msg = msg or '{var_name!r} must be of type {required}, got {bad}'.format(
+            var_name=var_name,
+            required=typings if len(typings) > 1 else typings[0],
+            bad=type(obj),
+        )
         raise TypeError(msg)
     return res

@@ -54,6 +54,7 @@ from chriscarl.core.types.iterable import contains
 from chriscarl.core.types.str import size_to_bytes
 from chriscarl.core.lib.stdlib.io import MODES
 from chriscarl.core.lib.stdlib.os import abspath, make_file_dirpath, TEMP_DIRPATH
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/logging.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -229,7 +230,7 @@ class SuccinctFormatter(logging.Formatter):
             self.mode = mode
             self._mode = self.__class__._MODES.index(mode)
         else:
-            raise TypeError('mode must be of type {}, provided {}!'.format(Union[str, int], type(mode)))
+            isinstance_raise(mode, Union[str, int])
 
     def format(self, record):
         # type: (logging.LogRecord) -> str

@@ -27,6 +27,7 @@ from typing import Optional, Union, List, Generator
 # project imports
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.io import read_text_file
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/fnmatch.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -56,7 +57,7 @@ def argument_to_fnmatchs(none_str_list):
     elif none_str_list is None:
         return fnmatchs
     else:
-        raise TypeError('expected {}, provided type {}!'.format(T_STR_OR_LIST, type(none_str_list)))
+        isinstance_raise(none_str_list, T_STR_OR_LIST)
     return fnmatchs
 
 

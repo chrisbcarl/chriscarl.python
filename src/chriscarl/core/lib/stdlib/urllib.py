@@ -48,6 +48,7 @@ from typing import List, Optional, Callable, Tuple, Dict, Any
 from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.io import read_text_file, read_text_file_try
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/urllib.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -350,9 +351,9 @@ def request(method, url, data=None, headers=None, context=SSL_BASIC_CTX):
     # type: (str, str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext) -> Response
     LOGGER.debug('%s %s', method, url)
     headers = headers or {}
+    isinstance_raise(headers, dict)
     data = data or {}
-    if not isinstance(data, dict):
-        raise TypeError(f'data must be of type {dict}, provided {type(data)}!')
+    isinstance_raise(data, dict)
     # take {'key': 'value'} => 'key=value'
     # NOTE: this section demonstrates that its all bytes anyway.
     #   if you have a better encoding mechanism...
