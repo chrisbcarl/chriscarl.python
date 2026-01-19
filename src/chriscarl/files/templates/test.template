@@ -68,6 +68,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0()
+    finally:
+        tc.tearDown()

@@ -10,6 +10,7 @@ core.constants are useful to have actual constants
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-19 - core.constants - added MAIN constants to allow other projects to reference collaterals
     2026-01-17 - core.constants - BUG: fixed problems caused by __init__.py and removed circular import issue
     2026-01-13 - core.constants - added fix_constants to deal with namespace development
     2026-01-07 - core.constants - updated to deal with change to namespace rather than regular module.
@@ -48,8 +49,10 @@ MODULE_DIRPATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 PYPA_SRC_DIRPATH = os.path.abspath(os.path.join(MODULE_DIRPATH, '../'))
 REPO_DIRPATH = os.path.abspath(os.path.join(PYPA_SRC_DIRPATH, '../'))
 TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
-TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
+TESTS_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
 PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
+MAIN_TESTS_DIRPATH = ''
+MAIN_TESTS_COLLATERAL_DIRPATH = ''
 CWD = os.getcwd()
 NOW = datetime.datetime.now()
 DATE = NOW.strftime('%Y-%m-%d')
@@ -80,7 +83,7 @@ def fix_constants(module):
     Returns:
         None
     '''
-    global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TEST_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE
+    global CWD, PYPA_SRC_DIRPATH, REPO_DIRPATH, TESTS_DIRPATH, TESTS_COLLATERAL_DIRPATH, PIP_DEVELOP_MODE, MAIN_TESTS_DIRPATH, MAIN_TESTS_COLLATERAL_DIRPATH
     if not isinstance(module, ModuleType):
         raise TypeError(f"'module' must be of type {ModuleType}, provided {type(module)}!")
     # isinstance_raise(module, ModuleType)  # NOTE: cannot do this, causes circular imports...
@@ -108,10 +111,13 @@ def fix_constants(module):
     PYPA_SRC_DIRPATH = os.path.abspath(os.path.join(module_dirpath, '../'))
     REPO_DIRPATH = os.path.abspath(os.path.join(PYPA_SRC_DIRPATH, '../'))
     TESTS_DIRPATH = os.path.abspath(os.path.join(REPO_DIRPATH, 'tests'))
-    TEST_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
+    TESTS_COLLATERAL_DIRPATH = os.path.abspath(os.path.join(TESTS_DIRPATH, 'collateral'))
     PIP_DEVELOP_MODE = PYPA_SRC_DIRPATH.endswith('src')
-    if PIP_DEVELOP_MODE and not os.path.isdir(TEST_COLLATERAL_DIRPATH):
+    if PIP_DEVELOP_MODE and not os.path.isdir(TESTS_DIRPATH):
         raise RuntimeError('constants is badly configured, not sure how?')
+    if not MAIN_TESTS_DIRPATH:  # populates initially, and then never again.
+        MAIN_TESTS_DIRPATH = TESTS_DIRPATH
+        MAIN_TESTS_COLLATERAL_DIRPATH = TESTS_COLLATERAL_DIRPATH
 
 
 fix_constants(chriscarl.core.lib.stdlib)

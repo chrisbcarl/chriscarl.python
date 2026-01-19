@@ -51,7 +51,7 @@ class TestCase(UnitTest):
         return super().tearDown()
 
     def test_case_0_PytestCoverage(self):
-        pytest_coverage_text = read_text_file(abspath(constants.TEST_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
+        pytest_coverage_text = read_text_file(abspath(constants.TESTS_COLLATERAL_DIRPATH, 'pytest-coverage.txt'))
         pytest_coverages = lib.PytestCoverage.parse_coverage(pytest_coverage_text)
         for pytest_coverage in pytest_coverages:
             LOGGER.debug(pytest_coverage)

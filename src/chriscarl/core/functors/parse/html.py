@@ -10,6 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-19 - core.functors.parse.html - much needed type annotations
     2026-01-07 - core.functors.parse.html - quality of life functions added to classes, get_attr
     2026-01-06 - core.functors.parse.html - BUG: fixed where it would omit large portions of the html, turns out the logic was missing the sibling, the else was important
     2026-01-06 - core.functors.parse.html - initial commit
@@ -80,10 +81,10 @@ class Dom():
     '''
     # FEATURE: html-parser
     '''
-    nodes = []
-    ids = {}
-    classes = {}
-    tags = {}
+    nodes = []  # type: List[Node]
+    ids = {}  # type: Dict[str, Node]
+    classes = {}  # type: Dict[str, Node]
+    tags = {}  # type: Dict[str, Node]
 
     @classmethod
     def from_html(cls, html):
@@ -98,6 +99,7 @@ class Dom():
         self.discover()
 
     def to_string(self):
+        # type: () -> str
         return '\n'.join(node.to_string(depth=0) for node in self.nodes)
 
     def iterate_level_order(self, functor):
@@ -110,6 +112,7 @@ class Dom():
                 queue.append(child)
 
     def discover(self):
+        # type: () -> None
 
         def discover_node(node):
             if node.tag not in self.tags:
@@ -130,27 +133,33 @@ class Dom():
         self.iterate_level_order(discover_node)
 
     def get_element_by_id(self, id_, default=None):
+        # type: (str, Optional[Any]) -> Node
         return self.ids.get(id_, default)
 
     def get_element_by_class(self, classs, default=None):
+        # type: (str, Optional[Any]) -> Node
         lst = self.classes.get(classs, [])
         if lst:
             return lst[0]
         return default
 
-    def get_elements_by_class(self, classs):
-        return self.classes.get(classs, [])
-
     def get_element_by_tag(self, tag, default=None):
+        # type: (str, Optional[Any]) -> Node
         lst = self.tags.get(tag, [])
         if lst:
             return lst[0]
         return default
 
+    def get_elements_by_class(self, classs):
+        # type: (str, Optional[Any]) -> List[Node]
+        return self.classes.get(classs, [])
+
     def get_elements_by_tag(self, tag):
+        # type: (str, Optional[Any]) -> List[Node]
         return self.tags.get(tag, [])
 
     def get_attr(self, attr, default=None):
+        # type: (str, Optional[Any]) -> List[str]
         lst = []
         self.iterate_level_order(lambda node: lst.append(node.attrs.get(attr, default)))
         return [ele for ele in lst if ele]

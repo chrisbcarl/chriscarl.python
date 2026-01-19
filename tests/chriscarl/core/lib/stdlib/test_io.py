@@ -44,9 +44,9 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
-        self.utf8 = abspath(constants.TEST_COLLATERAL_DIRPATH, 'utf-8')
-        self.utf16le = abspath(constants.TEST_COLLATERAL_DIRPATH, 'utf-16-le')
-        self.cp1252 = abspath(constants.TEST_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
+        self.utf8 = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'utf-8')
+        self.utf16le = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'utf-16-le')
+        self.cp1252 = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
         return super().setUp()
 
     def tearDown(self):
