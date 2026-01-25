@@ -10,6 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-24 - core.functors.parse.html - annotations were still wrong?
     2026-01-19 - core.functors.parse.html - much needed type annotations
     2026-01-07 - core.functors.parse.html - quality of life functions added to classes, get_attr
     2026-01-06 - core.functors.parse.html - BUG: fixed where it would omit large portions of the html, turns out the logic was missing the sibling, the else was important
@@ -23,7 +24,7 @@ import sys
 import logging
 from html.parser import HTMLParser as _HTMLParser
 # from html.entities import name2codepoint
-from typing import Callable
+from typing import Callable, Optional, List, Dict, Any
 
 # third party imports
 
@@ -83,12 +84,12 @@ class Dom():
     '''
     nodes = []  # type: List[Node]
     ids = {}  # type: Dict[str, Node]
-    classes = {}  # type: Dict[str, Node]
-    tags = {}  # type: Dict[str, Node]
+    classes = {}  # type: Dict[str, List[Node]]
+    tags = {}  # type: Dict[str, List[Node]]
 
     @classmethod
     def from_html(cls, html):
-        # type: (str, str) -> Dom
+        # type: (str) -> Dom
         return html_to_dom(html)
 
     def __init__(self, nodes):
@@ -133,18 +134,18 @@ class Dom():
         self.iterate_level_order(discover_node)
 
     def get_element_by_id(self, id_, default=None):
-        # type: (str, Optional[Any]) -> Node
+        # type: (str, Optional[Any]) -> Node | Any
         return self.ids.get(id_, default)
 
     def get_element_by_class(self, classs, default=None):
-        # type: (str, Optional[Any]) -> Node
+        # type: (str, Optional[Any]) -> Node | Any
         lst = self.classes.get(classs, [])
         if lst:
             return lst[0]
         return default
 
     def get_element_by_tag(self, tag, default=None):
-        # type: (str, Optional[Any]) -> Node
+        # type: (str, Optional[Any]) -> Node | Any
         lst = self.tags.get(tag, [])
         if lst:
             return lst[0]
@@ -168,6 +169,7 @@ class Dom():
 class HtmlNestedParser(_HTMLParser):
     # https://docs.python.org/3/library/html.parser.html
     stack = []
+    dom = None  # type: Optional[Dom]
 
     def parse(self, html):
         # type: (str, str) -> Dom
@@ -202,9 +204,8 @@ class HtmlNestedParser(_HTMLParser):
                 if node:
                     node = node.parent
 
-        # remaining node is the root
-        dom = Dom(root.children)
-        return dom
+        # # remaining node is the root
+        self.dom = Dom(root.children)
 
     def handle_data(self, data):
         '''
@@ -257,9 +258,11 @@ class HtmlNestedParser(_HTMLParser):
 
 
 def html_to_dom(text):
-    # type: (str, str) -> Dom
+    # type: (str) -> Dom
     parser = HtmlNestedParser()
     if is_file(text):
         text = read_text_file_try(text)
-    dom = parser.feed(text)
-    return dom
+    parser.feed(text)
+    if parser.dom is None:
+        raise RuntimeError('could not parse html to Dom!')
+    return parser.dom
