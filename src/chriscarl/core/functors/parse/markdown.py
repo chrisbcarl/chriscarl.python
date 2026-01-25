@@ -11,6 +11,7 @@ core.functor are modules that functions that are usually defined as lambdas, but
 
 Updates:
     2026-01-24 - core.functors.parse.markdown - initial commit
+                 core.functors.parse.markdown - LMAO that's why life ain't TDD. TDD is only as good as the test.
 '''
 
 # stdlib imports
@@ -42,16 +43,21 @@ def table_prettify(table_text):
         raise ValueError('probably invalid markdown table! could not detect either the start pipe or end pipe!')
 
     rows = []
-    maxlen = -1
     lines = table_text.splitlines()
     for line in lines:
         row = []
         for col in line.strip()[1:-1].split('|'):  # avoid the end pipes, split on the mid pipes
             col = col.strip()
             row.append(col)
-            maxlen = max([maxlen, len(col)])
         rows.append(row)
 
-    fmt = '{:%ss}' % maxlen
-    out = '\n'.join(f'|{"|".join(fmt.format(r) for r in row)}|' for row in rows)
+    fmt_cols = []
+    cols = len(rows[0])
+    for col in range(0, cols):
+        maxcollen = -1
+        for row in rows:
+            maxcollen = max([maxcollen, len(row[col])])
+        fmt_cols.append('{:%ss}' % maxcollen)
+
+    out = '\n'.join(f'|{"|".join(fmt_cols[col].format(cell) for col, cell in enumerate(row))}|' for row in rows)
     return out

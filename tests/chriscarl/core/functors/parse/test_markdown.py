@@ -56,11 +56,11 @@ class TestCase(UnitTest):
         table_bad = '''
 |a|b|
 |--|---|
-|hello|world|
+|hel|world|
 '''
-        table_pretty = '''|a    |b    |
-|--   |---  |
-|hello|world|'''
+        table_pretty = '''|a  |b    |
+|-- |---  |
+|hel|world|'''
 
         variables = [
             (lib.table_prettify, (table_bad,)),
