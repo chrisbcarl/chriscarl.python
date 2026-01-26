@@ -10,6 +10,7 @@ core.functors.parse.str is general string parsing
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-25 - core.functors.parse.str - added unicode_replace
     2026-01-09 - core.functors.parse.str - initial commit
 '''
 
@@ -166,3 +167,18 @@ def get_dict_value_by_text_key(key, text, default=None):
     for value in get_dict_values_by_text_key(key, text):
         return value
     return default
+
+
+UNICODES = {
+    '​': '',
+    '’': "'",
+    '–': '--',
+    '−': '-',  # this is actually distinct from the one directly above...
+}
+
+
+def unicode_replace(content):
+    # type: (str) -> str
+    for uni, ascii in UNICODES.items():
+        content = content.replace(uni, ascii)
+    return content

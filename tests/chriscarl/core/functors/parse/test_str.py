@@ -147,6 +147,17 @@ gzip, deflate, br, zstd
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3(self):
+        variables = [
+            (lib.unicode_replace, ('what’s', )),
+            (lib.unicode_replace, ('i luv em–dashes', )),
+        ]
+        controls = [
+            "what's",
+            "i luv em--dashes",
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -155,5 +166,6 @@ if __name__ == '__main__':
     tc.test_case_0_parenthesis_extract()
     tc.test_case_1_lines_to_dict()
     tc.test_case_2_get_dict_value_by_text_key()
+    tc.test_case_3()
 
     tc.tearDown()
