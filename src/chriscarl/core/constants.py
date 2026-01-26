@@ -60,11 +60,12 @@ TIME = NOW.strftime('%H:%M:%S.%f')
 SENTINEL = '0cc44c50-5d1e-4529-b8c3-5ee4271aa5a0_338ad6d4-ce81-4e13-9ccc-5a34cf55947b'
 NAMESPACED_MODULES = [
     'chriscarl',
-    'chriscarl.tools',
-    'chriscarl.tools.shed',
     'chriscarl.core',
     'chriscarl.core.lib',
     'chriscarl.core.lib.third',
+    'chriscarl.files',
+    'chriscarl.tools',
+    'chriscarl.tools.shed',
 ]
 
 TEMP_DIRPATH = '/temp'
