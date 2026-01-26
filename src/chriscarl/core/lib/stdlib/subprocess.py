@@ -10,6 +10,7 @@ core.lib.stdlib.subprocess is mostly wrappers around handling subprocesses.
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-01-25 - core.lib.stdlib.subprocess - added which/where
     2026-01-16 - core.lib.stdlib.subprocess - added kill
     2024-11-27 - core.lib.stdlib.subprocess - added run and launch_editor
     2024-11-25 - core.lib.stdlib.subprocess - initial commit
@@ -66,3 +67,21 @@ def kill(pid):
     else:
         exit_code = subprocess.Popen(['kill', str(pid), '-9'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).wait()
     return exit_code
+
+
+def where(name):
+    # type: (str) -> str
+    try:
+        output = subprocess.check_output(['where.exe' if sys.platform == 'win32' else 'which', name], universal_newlines=True)
+        output = output.strip()
+        if output:
+            return output.splitlines()[0]
+        else:
+            return ''
+    except subprocess.CalledProcessError:
+        return ''
+
+
+def which(name):
+    # type: (str) -> str
+    return where(name)

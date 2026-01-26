@@ -72,6 +72,15 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3(self):
+        variables = [
+            (lib.which, ('python', )),
+        ]
+        controls = [
+            sys.executable,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -80,5 +89,6 @@ if __name__ == '__main__':
     tc.test_case_0_run()
     tc.test_case_1_launch_filepath()
     tc.test_case_2_kill()
+    tc.test_case_3()
 
     tc.tearDown()
