@@ -65,9 +65,9 @@ class TestCase(UnitTest):
   pages    = "1143--1148",
 }'''
         variables = [
-            (lib.extract_bibtex, (bibtex, )),
-            (lib.bibtex_get_keys, (bibtex, )),
-            (lib.bibtex_get_keys, (bibtex_bad, )),
+            (lib.extract_from, (bibtex, )),
+            (lib.get_labels, (bibtex, )),
+            (lib.get_labels, (bibtex_bad, )),
         ]
         controls = [
             bibtex,

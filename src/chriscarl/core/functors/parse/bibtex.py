@@ -39,7 +39,7 @@ LOGGER.addHandler(logging.NullHandler())
 REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-z_-]+)\{(?P<label>[A-Za-z0-9_-]+)?,?')
 
 
-def bibtex_get_keys(text, raise_on_null=True):
+def get_labels(text, raise_on_null=True):
     # type: (str, bool) -> Dict[str, str]
     '''
     Description:
@@ -62,7 +62,7 @@ def bibtex_get_keys(text, raise_on_null=True):
     return dick
 
 
-def extract_bibtex(text):
+def extract_from(text):
     # type: (str) -> str
     '''
     Description:
