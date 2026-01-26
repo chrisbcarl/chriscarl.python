@@ -11,6 +11,7 @@ core.functor are modules that functions that are usually defined as lambdas, but
 
 Updates:
     2026-01-25 - core.functors.parse.bibtex - initial commit
+                 core.functors.parse.bibtex - added prettification
 '''
 
 # stdlib imports
@@ -19,7 +20,7 @@ import os
 import sys
 import logging
 import re
-from typing import Dict
+from typing import Dict, Tuple
 
 # third party imports
 
@@ -62,8 +63,28 @@ def get_labels(text, raise_on_null=True):
     return dick
 
 
-def extract_from(text):
-    # type: (str) -> str
+def bibtex_find_start_endpoint(text, idx):
+    # type: (str, int) -> Tuple[int, int]
+    mo = REGEX_BIBTEX_CITATION_KEY.search(text, idx)
+    if not mo:
+        return -1, -1
+    start = idx = mo.start()
+    while text[idx] != '{':
+        idx += 1
+    stack = ['{']
+    idx += 1
+    while stack:
+        char = text[idx]
+        if char == '{':
+            stack.insert(0, char)
+        elif char == '}':
+            stack.pop(0)
+        idx += 1
+    return start, idx
+
+
+def extract_from(text, pretty=True, indent=4):
+    # type: (str, bool, int) -> str
     '''
     Description:
         given ANY text, find the relevant bibtex inside it.
@@ -71,23 +92,36 @@ def extract_from(text):
         str
     '''
     tex = []
-    idx = 0
-    while idx < len(text):
-        mo = REGEX_BIBTEX_CITATION_KEY.search(text, idx)
-        if not mo:
+    end = 0
+    while end < len(text):
+        start, end = bibtex_find_start_endpoint(text, end)
+        if start == -1:
             break
-        idx = mo.start()
-        while text[idx] != '{':
-            idx += 1
-        stack = ['{']
-        idx += 1
-        while stack:
-            char = text[idx]
-            if char == '{':
-                stack.insert(0, char)
-            elif char == '}':
-                stack.pop(0)
-            idx += 1
+        block = text[start:end].strip()
+        if pretty:
+            mo = REGEX_BIBTEX_CITATION_KEY.search(block)
+            if not mo:
+                raise RuntimeError('this shouldnt be happening ever!')
+            pend = mo.end()
+            top_line = block[mo.start():pend]
+            end_line = block[-1]
+            midsection = block[pend:-1].strip()
+            lines = []
+            for line in midsection.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith('%'):
+                    lines.append(('', line))
+                    continue
+                if '=' not in line:
+                    raise ValueError(f'bibtex multilines not supported! "{line}"')
+                key, value = line.split('=')
+                lines.append((key.strip(), value.strip()))
+            max_key_len = max(len(tpl[0]) for tpl in lines)
+            fmt = '%s{:%ds} = {:}' % (' ' * indent, max_key_len)
+            midsection = '\n'.join(fmt.format(key, value) if key else f'{" " * indent}{value}' for key, value in lines)
+            block = f'{top_line}\n{midsection}\n{end_line}'  # prettified
 
-        tex.append(text[mo.start():idx])
+        tex.append(block)
     return '\n'.join(tex)

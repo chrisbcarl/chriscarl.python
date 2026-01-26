@@ -60,21 +60,55 @@ class TestCase(UnitTest):
   volume   = "50",
   number   = "6",
   pages    = "1143--1148",
-}'''
+}
+
+
+
+'''
         bibtex_bad = r'''@article{
   pages    = "1143--1148",
 }'''
         variables = [
-            (lib.extract_from, (bibtex, )),
+            (lib.extract_from, (bibtex, ), dict(pretty=False)),
             (lib.get_labels, (bibtex, )),
             (lib.get_labels, (bibtex_bad, )),
         ]
         controls = [
-            bibtex,
+            bibtex.strip(),
             {
                 'CitekeyArticle': 'article'
             },
             ValueError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1(self):
+        bibtex = r'''@article{CitekeyArticle,
+  author   = "P. J. Cohen", % inline comment
+  year = 2025,
+  % keycomment
+}@book{Different,
+  date = "someother", % another inline
+  year   = 2026,
+  % different key
+}
+'''
+        bibtex_good = r'''@article{CitekeyArticle,
+    author = "P. J. Cohen", % inline comment
+    year   = 2025,
+    % keycomment
+}
+@book{Different,
+    date = "someother", % another inline
+    year = 2026,
+    % different key
+}
+'''
+        variables = [
+            (lib.extract_from, (bibtex, ), dict(pretty=True)),
+        ]
+        controls = [
+            bibtex_good.strip(),
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -85,5 +119,6 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
     finally:
         tc.tearDown()
