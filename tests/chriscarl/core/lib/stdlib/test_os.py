@@ -168,6 +168,17 @@ class TestCase(UnitTest):
             ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_7(self):
+        variables = [
+            (lib.filename, (__file__, )),
+            (lib.filename, (os.__file__, )),
+        ]
+        controls = [
+            'test_os',
+            'os',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -180,5 +191,6 @@ if __name__ == '__main__':
     tc.test_case_4_as_posix()
     tc.test_case_5_as_posix_win32()
     tc.test_case_6_easy()
+    tc.test_case_7()
 
     tc.tearDown()
