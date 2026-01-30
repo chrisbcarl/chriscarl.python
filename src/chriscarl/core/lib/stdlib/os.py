@@ -177,23 +177,29 @@ def is_dir(*paths):
     return os.path.isdir(abspath(*paths))
 
 
-def wait_for_new_file(dirpath, timeout=10):
-    # type: (str, int|float) -> str
+def listdir(dirpath, bad_exts=['.crdownload']):
+    # type: (str, List[str]) -> List[str]
+    dirpath = abspath(dirpath)
+    basenames = []
+    for basename in list(os.listdir(dirpath)):
+        _, ext = os.path.splitext(basename)
+        if any(xt in ext for xt in bad_exts):
+            continue
+        basenames.append(basename)
+    return [os.path.join(dirpath, basename) for basename in basenames]
+
+
+def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload']):
+    # type: (str, int|float, List[str]) -> str
     dirpath = abspath(dirpath)
     then = time.time()
-    files_then = set(os.listdir(dirpath))
-    files_now = set(os.listdir(dirpath))
+    files_then = set(listdir(dirpath, bad_exts=bad_exts))
+    files_now = set(listdir(dirpath, bad_exts=bad_exts))
     while files_now == files_then and time.time() - then < timeout:
-        files_now = set(os.listdir(dirpath))
+        files_now = set(listdir(dirpath, bad_exts=bad_exts))
         time.sleep(0.1)
     diff = list(files_now.difference(files_then))
     if not diff:
         raise TimeoutError(f'timeout of {timeout}sec waiting for a new file in "{dirpath}"')
 
-    return abspath(diff[0])
-
-
-def listdir(dirpath):
-    # type: (str) -> List[str]
-    dirpath = abspath(dirpath)
-    return [os.path.join(dirpath, filename) for filename in os.listdir(dirpath)]
+    return abspath(dirpath, diff[0])
