@@ -228,6 +228,7 @@ def download_method_1(url, filepath, context=SSL_BASIC_CTX, headers=HEADERS):
 def download(
     url,
     dirpath=constants.TEMP_DIRPATH,
+    filepath=None,
     is_a='file',
     flat=True,
     skip_exist=False,
@@ -237,18 +238,20 @@ def download(
     headers=HEADERS,
     as_body=False,
 ):
-    # type: (str, str, str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict, bool) -> Tuple[str, str]
+    # type: (str, str, Optional[str], str, bool, bool, bool, ssl.SSLContext, Optional[threading.Event], dict, bool) -> Tuple[str, str]
     '''
     Returns:
         Tuple[str, str]
             filepath, url
     '''
     global URLLIB_PRIOR_CONTEXT, URLLIB_OPENER
-    filepath = get_filepath(url, dirpath, flat=flat)
-    if skip_exist and os.path.isfile(filepath):
-        return filepath, url
-    if os.path.isdir(filepath) or is_a == 'link':
-        filepath = f'{filepath}.html'
+    if not isinstance(filepath, str):
+        filepath = get_filepath(url, dirpath, flat=flat)
+        if skip_exist and os.path.isfile(filepath):
+            return filepath, url
+        if os.path.isdir(filepath) or is_a == 'link':
+            filepath = f'{filepath}.html'
+    filepath = abspath(filepath)
     LOGGER.debug('downloading %s to "%s"', url, filepath)
 
     if is_a == 'file':
@@ -322,7 +325,7 @@ class Response():
     url: str = ''
     status_code: int = -1
     headers: dict = dataclasses.field(default_factory=lambda: {})
-    body: str = ''
+    body: str | bytes = ''
     __json = None
 
     @property
@@ -346,8 +349,8 @@ class Response():
             return self.to_dict() == value.to_dict()
 
 
-def request(method, url, data=None, headers=None, context=SSL_BASIC_CTX):
-    # type: (str, str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext) -> Response
+def request(method, url, data=None, headers=None, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
     LOGGER.debug('%s %s', method, url)
     headers = headers or {}
     isinstance_raise(headers, dict)
@@ -360,47 +363,57 @@ def request(method, url, data=None, headers=None, context=SSL_BASIC_CTX):
     data_encoded = urllib.parse.urlencode(data).encode('utf-8') if data else None
     req = urllib.request.Request(url, data=data_encoded, headers=headers, method=method)
     with urllib.request.urlopen(req, context=context) as r:
+        response_headers = dict(r.headers)
+        if response_headers.get('Transfer-Encoding') == 'chunked':
+            ba = bytearray()
+            chunk = r.read(8192)
+            while chunk:
+                ba += chunk
+                chunk = r.read(8192)
+            content = bytes(ba)
+        else:
+            content = r.read()
         resp = Response(
             method=method,
             url=url,
             status_code=r.code,
             headers=dict(r.headers),
-            body=r.read().decode('utf-8'),
+            body=content if not decoding else content.decode(decoding),
         )
     LOGGER.debug(resp)
     return resp
 
 
-def get(url, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('GET', url, headers=headers, context=context)
+def get(url, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('GET', url, headers=headers, context=context, decoding=decoding)
 
 
-def post(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('POST', url, data=data, headers=headers, context=context)
+def post(url, data, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('POST', url, data=data, headers=headers, context=context, decoding=decoding)
 
 
-def put(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('PUT', url, data=data, headers=headers, context=context)
+def put(url, data, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('PUT', url, data=data, headers=headers, context=context, decoding=decoding)
 
 
-def delete(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('DELETE', url, data=data, headers=headers, context=context)
+def delete(url, data, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('DELETE', url, data=data, headers=headers, context=context, decoding=decoding)
 
 
-def options(url, data=None, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('OPTIONS', url, data=data, headers=headers, context=context)
+def options(url, data=None, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, Optional[dict], Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('OPTIONS', url, data=data, headers=headers, context=context, decoding=decoding)
 
 
-def patch(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('PATCH', url, data=data, headers=headers, context=context)
+def patch(url, data, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('PATCH', url, data=data, headers=headers, context=context, decoding=decoding)
 
 
-def head(url, data, headers=HEADERS, context=SSL_BASIC_CTX):
-    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext) -> Response
-    return request('HEAD', url, data=data, headers=headers, context=context)
+def head(url, data, headers=HEADERS, context=SSL_BASIC_CTX, decoding='utf-8'):
+    # type: (str, dict, Optional[Dict[str, str]], ssl.SSLContext, str) -> Response
+    return request('HEAD', url, data=data, headers=headers, context=context, decoding=decoding)

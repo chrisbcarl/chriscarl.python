@@ -23,6 +23,7 @@ import logging
 
 # project imports (expected to work)
 from chriscarl.core.lib.stdlib.unittest import UnitTest
+from chriscarl.core.lib.stdlib.io import write_text_file
 
 # test imports
 import chriscarl.core.lib.stdlib.os as lib
@@ -179,18 +180,29 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_8(self):
+        variables = [
+            (lib.wait_for_new_file, (self.tempdir, ), dict(timeout=0.2)),
+        ]
+        controls = [
+            TimeoutError,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_abspath()
-    tc.test_case_1_chdir()
-    tc.test_case_2_walk()
-    tc.test_case_3_drives()
-    tc.test_case_4_as_posix()
-    tc.test_case_5_as_posix_win32()
-    tc.test_case_6_easy()
-    tc.test_case_7()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0_abspath()
+        tc.test_case_1_chdir()
+        tc.test_case_2_walk()
+        tc.test_case_3_drives()
+        tc.test_case_4_as_posix()
+        tc.test_case_5_as_posix_win32()
+        tc.test_case_6_easy()
+        tc.test_case_7()
+        tc.test_case_8()
+    finally:
+        tc.tearDown()

@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-01-30 - core.lib.stdlib.os - added wait_for_new_file, listdir
     2026-01-25 - core.lib.stdlib.os - added filename
     2026-01-06 - core.lib.stdlib.os - added is_file, is_dir
     2024-12-04 - core.lib.stdlib.os - added as_posix
@@ -26,6 +27,7 @@ import re
 import string
 import logging
 from typing import Generator, Optional, List
+import time
 
 # third party imports
 
@@ -173,3 +175,25 @@ def is_file(*paths):
 
 def is_dir(*paths):
     return os.path.isdir(abspath(*paths))
+
+
+def wait_for_new_file(dirpath, timeout=10):
+    # type: (str, int|float) -> str
+    dirpath = abspath(dirpath)
+    then = time.time()
+    files_then = set(os.listdir(dirpath))
+    files_now = set(os.listdir(dirpath))
+    while files_now == files_then and time.time() - then < timeout:
+        files_now = set(os.listdir(dirpath))
+        time.sleep(0.1)
+    diff = list(files_now.difference(files_then))
+    if not diff:
+        raise TimeoutError(f'timeout of {timeout}sec waiting for a new file in "{dirpath}"')
+
+    return abspath(diff[0])
+
+
+def listdir(dirpath):
+    # type: (str) -> List[str]
+    dirpath = abspath(dirpath)
+    return [os.path.join(dirpath, filename) for filename in os.listdir(dirpath)]
