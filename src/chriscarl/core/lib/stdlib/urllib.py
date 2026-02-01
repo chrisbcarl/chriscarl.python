@@ -14,6 +14,7 @@ Examples:
     python -c "from chriscarl.core.lib.stdlib.urllib import get; print(get('http://localhost:8000').body)"
 
 Updates:
+    2026-02-01 - core.lib.stdlib.urllib - FIX: if a filepath was provided it wasnt checking it in all cases, now it does
     2026-01-16 - core.lib.stdlib.urllib - download can return just the text now and handle file:///
                  core.lib.stdlib.urllib - added RESTful methods
     2026-01-13 - core.lib.stdlib.urllib - fixed bugs where the return type wasnt tuple and wasnt tested as tuple
@@ -29,6 +30,7 @@ import logging
 import re
 import time
 import random
+import pathlib
 import ssl
 import json
 import threading
@@ -245,13 +247,13 @@ def download(
             filepath, url
     '''
     global URLLIB_PRIOR_CONTEXT, URLLIB_OPENER
-    if not isinstance(filepath, str):
+    if not isinstance(filepath, (str, pathlib.Path)):
         filepath = get_filepath(url, dirpath, flat=flat)
-        if skip_exist and os.path.isfile(filepath):
-            return filepath, url
         if os.path.isdir(filepath) or is_a == 'link':
             filepath = f'{filepath}.html'
     filepath = abspath(filepath)
+    if skip_exist and os.path.isfile(filepath):
+        return filepath, url
     LOGGER.debug('downloading %s to "%s"', url, filepath)
 
     if is_a == 'file':

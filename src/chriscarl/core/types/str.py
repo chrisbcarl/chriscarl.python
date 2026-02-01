@@ -10,6 +10,7 @@ core.types.str is probably badly named and should be "string" but either sucks, 
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-02-01 - core.types.str - added find_lineno
     2025-01-31 - core.types.str - added indent
     2025-01-14 - core.types.str - added contains_insensitive and its variants
     2024-12-13 - core.types.str - added strip_unicode
@@ -22,7 +23,7 @@ import os
 import sys
 import logging
 from collections import OrderedDict
-from typing import Generator, Union, Callable, Iterable
+from typing import Generator, Union, Callable, Iterable, Tuple
 
 # third party imports
 
@@ -50,14 +51,58 @@ for k in list(FILE_SIZE_UNITS.keys()):
 BYTES_TO_SIZE_UNITS = ['b', 'k', 'm', 'g', 't', 'p']
 
 
-def find_index(search, text):
+def find_index(substr, fullstr):
     # type: (str, str) -> Generator[int, None, None]
-    len_search = len(search)
-    for c, char in enumerate(text):
-        if c + len_search > len(text):
+    '''
+    Description:
+        Given some substr, find when it occurs by idx
+            warning: idx is 0-indexed
+        >>> find_index('world', 'hello world')
+        ... [6]
+    Return:
+        Generator[int, None, None]
+            idx - 0-indexed
+    '''
+    len_substr = len(substr)
+    for c, char in enumerate(fullstr):
+        if c + len_substr > len(fullstr):
             break
-        if char == search[0] and text[c:c + len_search] == search:
+        if char == substr[0] and fullstr[c:c + len_substr] == substr:
             yield c
+
+
+def find_lineno_index(substr, fullstr):
+    # type: (str, str) -> Generator[Tuple[int, int], None, None]
+    '''
+    Description:
+        Given some substr, find when it occurs by lineno and idx
+            warning: lineno is 0-indexed
+            warning: idx is 0-indexed
+        >>> find_lineno_index('world', 'hello world')
+        ... [(0, 6)]
+    Return:
+        Generator[Tuple[int, int], None, None]
+            (lineno, idx) - both 0-indexed
+    '''
+    for idx in find_index(substr, fullstr):
+        lineno = fullstr.count('\n', 0, idx)
+        yield (lineno, idx)
+
+
+def find_lineno(substr, fullstr):
+    # type: (str, str) -> Generator[int, None, None]
+    '''
+    Description:
+        Given some substr, find when it occurs by lineno
+            warning: lineno is 0-indexed
+        >>> find_lineno('world', 'hello world')
+        ... [0]
+    Return:
+        Generator[int, None, None]
+            lineno - 0-indexed
+    '''
+    for lineno, _ in find_lineno_index(substr, fullstr):
+        yield lineno
 
 
 def size_to_bytes(size, into='b'):

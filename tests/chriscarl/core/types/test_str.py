@@ -126,6 +126,17 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_5(self):
+        variables = [
+            (lib.find_lineno_index, ('world', 'hello world')),
+            (lib.find_lineno_index, ('world', 'hello world\nhello world')),
+        ]
+        controls = [
+            [(0, 6)],
+            [(0, 6), (1, 18)],  # lineno and idx are 0-indexed
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -137,5 +148,6 @@ if __name__ == '__main__':
         tc.test_case_2_unicode()
         tc.test_case_3_contains()
         tc.test_case_4()
+        tc.test_case_5()
     finally:
         tc.tearDown()
