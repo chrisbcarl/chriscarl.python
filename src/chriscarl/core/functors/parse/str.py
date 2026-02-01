@@ -9,6 +9,11 @@ Description:
 core.functors.parse.str is general string parsing
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
+TODO:
+    consider moving all of .parse into the root
+        OR
+    consider a new folder called xform or transform so there's functors.transform.str and functors.parse.str which means 2 different things.
+
 Updates:
     2026-01-25 - core.functors.parse.str - added unicode_replace
     2026-01-09 - core.functors.parse.str - initial commit

@@ -10,6 +10,7 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-31 - core.functors.parse.html - added html5
     2026-01-29 - core.functors.parse.html - added list_to_html
                  core.functors.parse.html - surprised the tests didnt pick it up, i'll need to get more summarized rather than verbosified
     2026-01-24 - core.functors.parse.html - annotations were still wrong?
@@ -352,3 +353,25 @@ def rows_to_html(rows, aligned='left', ordered=False, minify=True, indent=4):
 
     render = HTML_TEMPLATE_TABLE.format(ths=ths, trs='\n'.join(trs))
     return render
+
+HTML5_TEMPLATE = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+{content}
+</body>
+</html>'''
+
+def html5(html):
+    # type: (str) -> str
+    '''
+    Description:
+        Given a string like '<h1>Header</h1>', wrap it around real html...
+    Returns:
+        str
+    '''
+    return HTML5_TEMPLATE.format(content=html)

@@ -117,14 +117,25 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_4(self):
+        variables = [
+            (lib.indent, ('abc\n123', )),
+        ]
+        controls = [
+            '    abc\n    123',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_find_index()
-    tc.test_case_1_size_to_bytes()
-    tc.test_case_2_unicode()
-    tc.test_case_3_contains()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0_find_index()
+        tc.test_case_1_size_to_bytes()
+        tc.test_case_2_unicode()
+        tc.test_case_3_contains()
+        tc.test_case_4()
+    finally:
+        tc.tearDown()

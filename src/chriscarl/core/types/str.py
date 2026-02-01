@@ -10,7 +10,8 @@ core.types.str is probably badly named and should be "string" but either sucks, 
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
-    2025-01-14 - core.types.list - added contains_insensitive and its variants
+    2025-01-31 - core.types.str - added indent
+    2025-01-14 - core.types.str - added contains_insensitive and its variants
     2024-12-13 - core.types.str - added strip_unicode
     2024-11-26 - core.types.str - initial commit
 '''
@@ -123,3 +124,7 @@ def contains_all_insensitive(text, token_or_tokens, exc=False):
 def contains_any_insensitive(text, token_or_tokens, exc=False):
     # type: (str, str | list, bool) -> bool
     return contains_insensitive(text, token_or_tokens, exc=exc, func=any)
+
+
+def indent(text, indent='    '):
+    return '\n'.join(f'{indent}{line}' for line in text.splitlines())
