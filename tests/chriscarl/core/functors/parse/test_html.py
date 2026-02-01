@@ -79,7 +79,7 @@ class TestCase(UnitTest):
 
     def test_case_1_parse_flat(self):
         parser = lib.HtmlNestedParser()
-        dom = parser.feed(self.flat)
+        dom = parser.parse(self.flat)
         ele = dom.get_element_by_tag('li')
 
         variables = [
@@ -98,7 +98,7 @@ class TestCase(UnitTest):
 
     def test_case_2_parse_index(self):
         parser = lib.HtmlNestedParser()
-        dom = parser.feed(self.index)
+        dom = parser.parse(self.index)
         ided = dom.get_element_by_id('id1')
         anchor = dom.get_element_by_tag('a')
         anchors = dom.get_elements_by_tag('a')
@@ -159,13 +159,51 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_5(self):
+        variables = [
+            (lib.list_to_html, ([1, 2, 3], ), dict(ordered=False, indent=4, minify=True)),
+            (lib.list_to_html, ([1, 2, 3], ), dict(ordered=True, indent=4, minify=False)),
+        ]
+        controls = [
+            '<ul><li>1</li><li>2</li><li>3</li></ul>',
+            '''<ol>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+</ol>''',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_6(self):
+        variables = [
+            (lib.rows_to_html, ([{'abcdefg': 'xyz'}], ), dict(ordered=True, indent=4, minify=False)),
+        ]
+        controls = [
+            '''<table>
+    <thead>
+        <th scope="col" style="text-align: left;">abcdefg</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="text-align: left;">xyz</td>
+        </tr>
+    </tbody>
+</table>''',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_parse_ez()
-    tc.test_case_1_parse_flat()
-    tc.test_case_2_parse_index()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0_parse_ez()
+        tc.test_case_1_parse_flat()
+        tc.test_case_2_parse_index()
+        tc.test_case_3_parse_typical()
+        tc.test_case_4_get_attr()
+        tc.test_case_5()
+        tc.test_case_6()
+    finally:
+        tc.tearDown()

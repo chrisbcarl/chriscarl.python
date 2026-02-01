@@ -128,16 +128,40 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_6(self):
+        rows = [
+            {'a': None},
+            {'b': [1, 2, 3]},
+        ]
+        variables = [
+            (lib.rows_to_str_rows, ([{'a': {}}], )),
+            (lib.rows_to_str_rows, (rows, ), dict(on_list=lambda s: str(s))),
+        ]
+        controls = [
+            NotImplementedError,
+            (
+                [
+                    {'a': ''},
+                    {'b': '[1, 2, 3]'},
+                ],  # converted rows to strings only
+                ['a', 'b'],  # list of headers
+                9  # max string length
+            ),
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_dedupe()
-    tc.test_case_1_find_index()
-    tc.test_case_2_sorted_list_by_frequency()
-    tc.test_case_3_as_list()
-    tc.test_case_4_n_sized_chunks()
-    tc.test_case_5_n_chunks()
-
-    tc.tearDown()
+    try:
+        # tc.test_case_0_dedupe()
+        # tc.test_case_1_find_index()
+        # tc.test_case_2_sorted_list_by_frequency()
+        # tc.test_case_3_as_list()
+        # tc.test_case_4_n_sized_chunks()
+        # tc.test_case_5_n_chunks()
+        tc.test_case_6()
+    finally:
+        tc.tearDown()

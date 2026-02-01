@@ -10,6 +10,7 @@ core.types.list is all about these array-lists.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-01-31 - core.types.list - added rows_to_str_rows
     2025-01-14 - core.types.list - removed contains
     2025-01-01 - core.types.list - added n_sized_chunks and n_chunks
     2024-12-09 - core.types.list - added as_list
@@ -21,7 +22,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import List, Union, Callable, Any, Generator, Iterable
+from typing import List, Union, Callable, Any, Generator, Iterable, Tuple, Optional, Dict
 
 # third party imports
 
@@ -114,3 +115,46 @@ def n_chunks(lst, n):
         if not even and size - 1 > 0 and (len(lst) - i) % (size - 1) == 0:  # if remaining list is divisible by dropping down chunk lenght, do it
             size -= 1
             even = True
+
+
+def rows_to_str_rows(rows, on_list=None):
+    # type: (List[dict], Optional[Callable[[list], str]]) -> Tuple[List[Dict[str, str]], List[str], int]
+    '''
+    Description:
+        analyze/process a list of rows
+            massage into strings
+            AND get headers
+            AND get max cell length
+    Arguments:
+        rows: List[dict]
+        on_list: Optional[Callable[[list], str]]
+            if a list is detected, THIS converts it to a string
+    Returns:
+        Tuple[List[Dict[str, str]], List[str], int]
+            - rows of dicts of strings
+            - headers
+            - max string length of cells
+    '''
+    isinstance_raise(rows, List[dict])
+    headers = []
+    max_col_count = -1
+    row_strs = []
+    for r, row in enumerate(rows):
+        row_str = {}
+        for key, value in row.items():
+            if key not in headers:
+                headers.append(key)
+            value_str = str(value) if value else ''
+            if isinstance(value, (set, list, dict)):
+                if isinstance(value, list):
+                    if not on_list:
+                        raise NotImplementedError(f'row {r} has key w/ value type: {type(value)}, no handler passed!')
+                    value_str = on_list(value)
+                else:
+                    raise NotImplementedError(f'row {r} has key {key!r} w/ value type: {type(value)}! Only primitives allowed!')
+            row_str[key] = value_str
+            max_col_count = max([max_col_count, len(value_str)])
+        row_strs.append(row_str)
+    max_col_count = max([max_col_count] + [len(header) for header in headers])
+
+    return row_strs, headers, max_col_count

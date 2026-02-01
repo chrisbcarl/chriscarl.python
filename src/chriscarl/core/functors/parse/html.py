@@ -10,6 +10,8 @@ core.functors.parse.html is all about parsing html
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-29 - core.functors.parse.html - added list_to_html
+                 core.functors.parse.html - surprised the tests didnt pick it up, i'll need to get more summarized rather than verbosified
     2026-01-24 - core.functors.parse.html - annotations were still wrong?
     2026-01-19 - core.functors.parse.html - much needed type annotations
     2026-01-07 - core.functors.parse.html - quality of life functions added to classes, get_attr
@@ -25,12 +27,15 @@ import logging
 from html.parser import HTMLParser as _HTMLParser
 # from html.entities import name2codepoint
 from typing import Callable, Optional, List, Dict, Any
+import functools
 
 # third party imports
 
 # project imports
 from chriscarl.core.lib.stdlib.io import read_text_file_try
 from chriscarl.core.lib.stdlib.os import is_file
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
+from chriscarl.core.types.list import rows_to_str_rows
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/parse/html.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -266,3 +271,84 @@ def html_to_dom(text):
     if parser.dom is None:
         raise RuntimeError('could not parse html to Dom!')
     return parser.dom
+
+
+def list_to_html(lst, ordered=False, minify=True, indent=4):
+    # type: (list, bool, bool, int) -> str
+    '''
+    Description
+        ['a', 'b'] => <ul><li>a</li><li>b</li></ul>
+    Arguments:
+        ordered: bool
+            make the lists ordered lists?
+        minifiy: bool
+            default False
+        indent: int
+            default 4
+    Returns:
+        str
+    '''
+    isinstance_raise(lst, list)
+    tokens = ['<ol>' if ordered else '<ul>']
+    for ele in lst:
+        tokens.append(f'<li>{ele}</li>')
+    tokens.append('</ol>' if ordered else '</ul>')
+    if minify:
+        return ''.join(tokens)
+
+    inner = "\n".join(f"{' ' * indent}{tok}" for tok in tokens[1:-1])
+    return f'{tokens[0]}\n{inner}\n{tokens[-1]}'
+
+
+HTML_TEMPLATE_TH = '        <th scope="col" style="text-align: {aligned};">{cell}</th>'
+HTML_TEMPLATE_TR = '''        <tr>
+{td}
+        </tr>'''
+HTML_TEMPLATE_TD = '            <td style="text-align: {aligned};">{cell}</td>'
+HTML_TEMPLATE_TABLE = '''<table>
+    <thead>
+{ths}
+    </thead>
+    <tbody>
+{trs}
+    </tbody>
+</table>'''
+
+def rows_to_html(rows, aligned='left', ordered=False, minify=True, indent=4):
+    # type: (List[dict], str, bool, bool, int) -> str
+    '''
+    Description
+        [{'abcdefg': 'xyz'}] => <table>
+            <thead>
+                <th scope="col" style="text-align: left;">abcdefg</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left;">xyz</td>
+                </tr>
+            </tbody>
+        </table>
+    Arguments:
+        rows: List[dict]
+            typical list of dicts
+        aligned: str
+            default left, right, center
+        ordered: bool
+            make the lists ordered lists?
+        minifiy: bool
+            default False
+        indent: int
+            default 4
+    Returns:
+        str
+    '''
+    on_list = functools.partial(list_to_html, ordered=ordered, minify=minify, indent=indent)
+    row_strs, headers, _ = rows_to_str_rows(rows, on_list=on_list)
+
+    ths = '\n'.join(HTML_TEMPLATE_TH.format(aligned=aligned, cell=cell) for cell in headers)
+    trs = []
+    for row_str in row_strs:
+        trs.append(HTML_TEMPLATE_TR.format(td="\n".join(HTML_TEMPLATE_TD.format(aligned=aligned, cell=cell) for cell in row_str.values())))
+
+    render = HTML_TEMPLATE_TABLE.format(ths=ths, trs='\n'.join(trs))
+    return render

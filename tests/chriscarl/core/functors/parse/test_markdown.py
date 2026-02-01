@@ -70,6 +70,22 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1(self):
+        table_bad = '''|col|col|col|
+|---|---|---|
+|a  |b  |a,b|'''
+        table_pretty = '''|col|col|col|
+|---|---|---|
+|a  |b  |<ul><li>a</li><li>b</li></ul>|'''
+
+        variables = [
+            (lib.table_listified, (table_bad,)),
+        ]
+        controls = [
+            table_pretty,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -77,5 +93,6 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
     finally:
         tc.tearDown()

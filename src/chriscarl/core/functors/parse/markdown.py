@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-01-29 - core.functors.parse.markdown - added table_listified
     2026-01-24 - core.functors.parse.markdown - initial commit
                  core.functors.parse.markdown - LMAO that's why life ain't TDD. TDD is only as good as the test.
 '''
@@ -19,10 +20,12 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import re
 
 # third party imports
 
 # project imports
+from chriscarl.core.functors.parse.html import list_to_html
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/parse/markdown.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -61,3 +64,34 @@ def table_prettify(table_text):
 
     out = '\n'.join(f'|{"|".join(fmt_cols[col].format(cell) for col, cell in enumerate(row))}|' for row in rows)
     return out
+
+
+def table_listified(content, ordered=False):
+    # type: (str, bool) -> str
+    '''
+    Description
+        |col|col|col|
+        |---|---|---|
+        |a  |b  |a,b|
+            ===>
+        |col|col|col|
+        |---|---|---|
+        |a  |b  |<ul><li>a</li><li>b</li></ul>|
+    Arguments:
+        content: str
+            markdown content
+        ordered: do you want an OL or a UL?
+    Returns:
+        str
+    '''
+    table_mos = list(re.finditer(r'\| *([^\|]*?,[^\|]+) *\b', content))
+    for _, mo in enumerate(reversed(table_mos)):
+        start, end = mo.start(), mo.end()
+        substr = mo.groups()[0]
+        # print(len(substr), repr(substr))
+        lst = [ele.strip() for ele in substr.split(',')]
+        if lst:
+            replacement = list_to_html(lst, ordered=ordered)
+            content = f'{content[:start]}|{replacement}{content[end:]}'
+
+    return content

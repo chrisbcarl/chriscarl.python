@@ -64,6 +64,15 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1(self):
+        rows = [{'a': 'b'}, {'c': 'd'}]
+        output = lib.rows_to_latex(rows, caption='caption', label='label')
+        print(output)
+        self.assertIn('a & c', output)
+        self.assertIn('b ', output)
+        self.assertIn('d ', output)
+        self.assertIn('\\caption{caption}', output)
+        self.assertIn('\\label{label}', output)
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -71,5 +80,6 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
     finally:
         tc.tearDown()
