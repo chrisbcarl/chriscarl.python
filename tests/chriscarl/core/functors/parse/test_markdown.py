@@ -60,7 +60,7 @@ class TestCase(UnitTest):
 ||world|
 '''
         variables = [
-            (lib.table_to_rows_of_dicts, (table,), dict(null=True)),
+            (lib.table_to_rows, (table,), dict(null=True)),
         ]
         controls = [
             [{'a': 'hello', 'b': None}, {'a': None, 'b': 'world'}],
