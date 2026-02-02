@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-01 - core.functors.parse.markdown - added table_to_rows, table_to_rows_of_dicts
     2026-01-29 - core.functors.parse.markdown - added table_listified
     2026-01-24 - core.functors.parse.markdown - initial commit
                  core.functors.parse.markdown - LMAO that's why life ain't TDD. TDD is only as good as the test.
@@ -21,6 +22,7 @@ import os
 import sys
 import logging
 import re
+from typing import List, Dict
 
 # third party imports
 
@@ -39,8 +41,8 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-def table_prettify(table_text):
-    # type: (str) -> str
+def table_to_rows(table_text, null=False):
+    # type: (str, bool) -> List[list]
     table_text = table_text.strip()
     if not table_text.startswith('|') or not table_text.endswith('|'):
         raise ValueError('probably invalid markdown table! could not detect either the start pipe or end pipe!')
@@ -51,8 +53,31 @@ def table_prettify(table_text):
         row = []
         for col in line.strip()[1:-1].split('|'):  # avoid the end pipes, split on the mid pipes
             col = col.strip()
-            row.append(col)
+            if null:
+                row.append(col or None)
+            else:
+                row.append(col)
         rows.append(row)
+
+    return rows
+
+
+def table_to_rows_of_dicts(table_text, null=False):
+    # type: (str, bool) -> List[dict]
+    rows = table_to_rows(table_text, null=null)
+
+    header = rows[0]
+    left = rows[2:]
+    rows = []
+    for row in left:
+        rows.append({head: row[h] for h, head in enumerate(header)})
+
+    return rows
+
+
+def table_prettify(table_text):
+    # type: (str) -> str
+    rows = table_to_rows(table_text, null=False)
 
     fmt_cols = []
     cols = len(rows[0])

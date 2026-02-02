@@ -53,6 +53,21 @@ class TestCase(UnitTest):
 
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
+        table = '''
+|a|b|
+|--|---|
+|hello||
+||world|
+'''
+        variables = [
+            (lib.table_to_rows_of_dicts, (table,), dict(null=True)),
+        ]
+        controls = [
+            [{'a': 'hello', 'b': None}, {'a': None, 'b': 'world'}],
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1(self):
         table_bad = '''
 |a|b|
 |--|---|
@@ -70,7 +85,7 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
-    def test_case_1(self):
+    def test_case_2(self):
         table_bad = '''|col|col|col|
 |---|---|---|
 |a  |b  |a,b|'''
@@ -94,5 +109,6 @@ if __name__ == '__main__':
     try:
         tc.test_case_0()
         tc.test_case_1()
+        tc.test_case_2()
     finally:
         tc.tearDown()
