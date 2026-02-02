@@ -10,6 +10,7 @@ core.functors.parse.bibtex is funcs that deal with text that is hopefully bibtex
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-01 - core.functors.parse.bibtex - periods work as keys
     2026-01-25 - core.functors.parse.bibtex - initial commit
                  core.functors.parse.bibtex - added prettification
 '''
@@ -37,7 +38,7 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-z_-]+)\{(?P<label>[A-Za-z0-9_-]+)?,?')
+REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-z_-]+)\{(?P<label>[A-Za-z0-9_\-\.]+)?,?')
 
 
 def get_labels(text, raise_on_null=True):
@@ -115,7 +116,7 @@ def extract_from(text, pretty=True, indent=4):
                     lines.append(('', line))
                     continue
                 if '=' not in line:
-                    raise ValueError(f'bibtex multilines not supported! "{line}"')
+                    raise ValueError(f'bibtex multilines not supported! see line "{line}"')
                 key, value = line.split('=')
                 lines.append((key.strip(), value.strip()))
             max_key_len = max(len(tpl[0]) for tpl in lines)
