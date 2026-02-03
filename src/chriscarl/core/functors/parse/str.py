@@ -179,6 +179,7 @@ UNICODES = {
     '’': "'",
     '–': '--',
     '−': '-',  # this is actually distinct from the one directly above...
+    # '…': '...',  # TODO: test/decide if I do need to deal with this
 }
 
 
