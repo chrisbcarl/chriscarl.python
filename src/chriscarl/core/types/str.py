@@ -181,5 +181,5 @@ def indent(text, indent='    '):
 def dedent(text):
     # type: (str) -> str
     # TODO: tabs...
-    indent = min(len(mo.groups()[0]) for mo in re.finditer(r'(^ +)', text, flags=re.MULTILINE))
+    indent = min(len(mo.groups()[0]) for mo in re.finditer(r'(^ *)', text, flags=re.MULTILINE))
     return '\n'.join(line[indent:] for line in text.splitlines())
