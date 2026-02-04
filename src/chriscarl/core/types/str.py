@@ -10,6 +10,7 @@ core.types.str is probably badly named and should be "string" but either sucks, 
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-04 - core.types.str - added dedent
     2025-02-01 - core.types.str - added find_lineno
     2025-01-31 - core.types.str - added indent
     2025-01-14 - core.types.str - added contains_insensitive and its variants
@@ -24,6 +25,7 @@ import sys
 import logging
 from collections import OrderedDict
 from typing import Generator, Union, Callable, Iterable, Tuple
+import re
 
 # third party imports
 
@@ -172,4 +174,12 @@ def contains_any_insensitive(text, token_or_tokens, exc=False):
 
 
 def indent(text, indent='    '):
+    # type: (str, str) -> str
     return '\n'.join(f'{indent}{line}' for line in text.splitlines())
+
+
+def dedent(text):
+    # type: (str) -> str
+    # TODO: tabs...
+    indent = min(len(mo.groups()[0]) for mo in re.finditer(r'(^ +)', text, flags=re.MULTILINE))
+    return '\n'.join(line[indent:] for line in text.splitlines())

@@ -120,9 +120,13 @@ class TestCase(UnitTest):
     def test_case_4(self):
         variables = [
             (lib.indent, ('abc\n123', )),
+            (lib.dedent, ('  hello\n  world', )),
+            (lib.dedent, ('    hello\n  world', )),
         ]
         controls = [
             '    abc\n    123',
+            'hello\nworld',
+            '  hello\nworld',
         ]
         self.assert_null_hypothesis(variables, controls)
 
