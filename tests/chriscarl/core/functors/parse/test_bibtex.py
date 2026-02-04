@@ -46,13 +46,8 @@ constants.fix_constants(lib)  # deal with namespace sharding the files across di
 class TestCase(UnitTest):
 
     def setUp(self):
-        return super().setUp()
-
-    def tearDown(self):
-        return super().tearDown()
-
-    def test_case_0(self):
-        bibtex = r'''@article{CitekeyArticle,
+        self.bibtex_good_ugly_key = 'CitekeyArticle'
+        self.bibtex_good_ugly = r'''@article{CitekeyArticle,
   author   = "P. J. Cohen",
   title    = "The independence of the continuum hypothesis",
   journal  = "\url{Proceedings of the National Academy of Sciences}",
@@ -60,30 +55,42 @@ class TestCase(UnitTest):
   volume   = "50",
   number   = "6",
   pages    = "1143--1148",
-}
-
-
-
-'''
-        bibtex_bad = r'''@article{
+}'''
+        self.bibtex_good_small_key = 'no-idea-what-this-is'
+        self.bibtex_good_small = r'''@article{no-idea-what-this-is,
+    author = "P. J. Cohen", % inline comment
+    year   = 2025,
+    % keycomment
+}'''
+        self.bibtex_null = r'''@article{
   pages    = "1143--1148",
 }'''
+        return super().setUp()
+
+    def tearDown(self):
+        return super().tearDown()
+
+    def test_case_0(self):
+        non_bibtex0 = '\nabc\n\n'
+        non_bibtex1 = '\n\ndef\n'
         variables = [
-            (lib.extract_from, (bibtex, ), dict(pretty=False)),
-            (lib.get_labels, (bibtex, )),
-            (lib.get_labels, (bibtex_bad, )),
+            (lib.extract_from_and_remove, (non_bibtex0 + self.bibtex_good_ugly + non_bibtex1, ), dict(pretty=False)),
+            (lib.extract_from, (self.bibtex_good_ugly, ), dict(pretty=False)),
+            (lib.get_labels, (self.bibtex_good_ugly, )),
+            (lib.get_labels, (self.bibtex_null, )),
         ]
         controls = [
-            bibtex.strip(),
+            (self.bibtex_good_ugly, non_bibtex0 + non_bibtex1),
+            self.bibtex_good_ugly,
             {
                 'CitekeyArticle': 'article'
             },
-            ValueError,
+            KeyError,
         ]
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_1(self):
-        bibtex = r'''@article{CitekeyArticle,
+        bibtex = r'''@article{no-idea-what-this-is,
   author   = "P. J. Cohen", % inline comment
   year = 2025,
   % keycomment
@@ -93,7 +100,7 @@ class TestCase(UnitTest):
   % different key
 }
 '''
-        bibtex_good = r'''@article{CitekeyArticle,
+        bibtex_good = r'''@article{no-idea-what-this-is,
     author = "P. J. Cohen", % inline comment
     year   = 2025,
     % keycomment
@@ -112,6 +119,32 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2(self):
+        two = f'{self.bibtex_good_ugly}\n{self.bibtex_good_small}'
+        duped = f'{self.bibtex_good_small}\n{self.bibtex_good_small}'
+        variables = [
+            (lib.get_label_citation, (self.bibtex_null, ), dict(pretty=False)),
+            (lib.get_label_citation, (two, ), dict(pretty=False)),
+            (lib.get_label_citation, (self.bibtex_good_small, ), dict(pretty=False)),
+            (lib.get_label_citation, (duped, ), dict(pretty=False)),
+            (lib.get_label_citation, (duped, ), dict(pretty=False, dedupe=True)),
+        ]
+        controls = [
+            KeyError,
+            {
+                self.bibtex_good_ugly_key: self.bibtex_good_ugly,
+                self.bibtex_good_small_key: self.bibtex_good_small,
+            },
+            {
+                self.bibtex_good_small_key: self.bibtex_good_small
+            },
+            ValueError,
+            {
+                self.bibtex_good_small_key: self.bibtex_good_small
+            },
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -120,5 +153,6 @@ if __name__ == '__main__':
     try:
         tc.test_case_0()
         tc.test_case_1()
+        tc.test_case_2()
     finally:
         tc.tearDown()
