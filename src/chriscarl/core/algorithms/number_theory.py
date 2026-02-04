@@ -208,16 +208,3 @@ def compute_math(txt):
 whole = compute_math('1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5')
 frac = compute_math(r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}')
 print(whole + frac)
-
-
-def base_n_to_base_2(value, base, signed=False, width=4):
-    '''
-    should cover the following assignment requests
-    base_n to base_2 (base, signed, width)
-        hex to BCH - 63c
-        decimal to 8bit signed bin - 71a
-        decimal to signed word - 72b
-    >>> base_n_to_base_2('DE.AD', 16, signed=False, width=4) -> '1101 1110 . 1010 1101'
-    >>> base_n_to_base_2('-257', 10, signed=True, width=8) -> '10000001 00000001'
-    '''
-    pass

@@ -58,7 +58,7 @@ def get_labels(text, nulls=False):
     for mo in REGEX_BIBTEX_CITATION_KEY.finditer(text):
         groups = mo.groupdict()
         typ, label = groups['type'], groups['label']
-        if nulls and not label:
+        if not nulls and not label:
             raise KeyError(f'could not determine label for {text[mo.start():mo.end()]!r}')
         dick[label] = typ
     return dick

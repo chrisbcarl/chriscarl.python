@@ -1,5 +1,8 @@
 # TODO
 - FEATURES
+    unittest
+        on failed unit test, print the experiment on the left, the control on the right, vars if you have to...
+
     are new features added that arent in the FEATURES doc?
     are all prod features in the commit messages?
     move all staged features to prod
