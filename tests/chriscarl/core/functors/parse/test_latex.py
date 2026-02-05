@@ -76,16 +76,28 @@ class TestCase(UnitTest):
 
     def test_case_2(self):
         variables = [
+            # no change
             (lib.latex_escape, (r'\LaTeX', )),
             (lib.latex_escape, (r'\LaTeX is \(\text{great!}\)', )),
+            (lib.latex_escape, (r'``\(\bar{X}\)":', )),
+            (lib.latex_escape, (r'just use \lstinline{<>} and If', )),
+            (lib.latex_escape, (r'inc so: \cite[pp. 69-99]{CitekeyProceedings}.', )),
+            (lib.latex_escape, (r'u want \textbf{\emph{bolded and italicized}}, use ', )),
+            # change
             (lib.latex_escape, (r'\LaTeX is 100% \(\text{great!}\)', )),
             (lib.latex_escape, (r'____', )),
         ]
         controls = [
-            r'\LaTeX',  # no change
-            r'\LaTeX is \(\text{great!}\)',  # no change
-            r'\LaTeX is 100\% \(\text{great!}\)',  # changeeeee
-            r'\_\_\_\_',  # changeeeee
+            # no change
+            r'\LaTeX',
+            r'\LaTeX is \(\text{great!}\)',
+            r'``\(\bar{X}\)":',
+            r'just use \lstinline{<>} and If',
+            r'inc so: \cite[pp. 69-99]{CitekeyProceedings}.',
+            r'u want \textbf{\emph{bolded and italicized}}, use ',
+            # change
+            r'\LaTeX is 100\% \(\text{great!}\)',
+            r'\_\_\_\_',
         ]
         self.assert_null_hypothesis(variables, controls)
 

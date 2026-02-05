@@ -41,7 +41,7 @@ LOGGER.addHandler(logging.NullHandler())
 REGEX_LATEX_ESCAPE_CHARS = re.compile(r'([\\$#%&~_^{}])')
 REGEX_LATEX_NEEDS_ESCAPE = re.compile(r'([^\\])([$#%&~_^{}])')
 REGEX_LATEX_NEEDS_ESCAPE_ENCLOSED = re.compile(r'([^\\])({[$#%&~_^{}]})')
-REGEX_LATEX_FIND_COMMAND_AND_INLINE = re.compile(r'(\\[a-zA-Z]{3,}(?:\{.*\})*|\\\(.+\\\))', flags=re.MULTILINE)
+REGEX_LATEX_FIND_COMMAND_AND_INLINE = re.compile(r'(\\\(.+?\\\)|~?\\[a-zA-Z]{3,}(?:\[.+?\])*(?:\{.+?\}\}?)*)', flags=re.MULTILINE)
 
 
 def latex_escape_raw(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
@@ -57,7 +57,6 @@ def latex_escape_raw(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
 
 def latex_escape(text):
     # type: (str) -> str
-    # TODO: doesnt deal with brackets or custom stuff like \LaTeX is \(\text{great!}\)
     # in between the non-math and away from the literal latex commands... do a raw regex escape.
     tokens = []
     prev_end = 0
