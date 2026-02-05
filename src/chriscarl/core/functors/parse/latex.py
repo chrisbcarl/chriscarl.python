@@ -11,6 +11,7 @@ core.functor are modules that functions that are usually defined as lambdas, but
 
 Updates:
     2026-02-04 - core.functors.parse.latex - added latex_escape_raw and latex_escape is more straightforward...
+                 core.functors.parse.latex - added latex_replace
     2026-01-25 - core.functors.parse.latex - initial commit
 '''
 
@@ -42,6 +43,10 @@ REGEX_LATEX_ESCAPE_CHARS = re.compile(r'([\\$#%&~_^{}])')
 REGEX_LATEX_NEEDS_ESCAPE = re.compile(r'([^\\])([$#%&~_^{}])')
 REGEX_LATEX_NEEDS_ESCAPE_ENCLOSED = re.compile(r'([^\\])({[$#%&~_^{}]})')
 REGEX_LATEX_FIND_COMMAND_AND_INLINE = re.compile(r'(\\\(.+?\\\)|~?\\[a-zA-Z]{3,}(?:\[.+?\])*(?:\{.+?\}\}?)*)', flags=re.MULTILINE)
+
+LATEX_REPLACE = {
+    '…': r'\cdots',
+}
 
 
 def latex_escape_raw(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
@@ -149,4 +154,11 @@ def rows_to_latex(rows, caption=None, label=None, aligned='left'):
 \end{{tabularx}}
 \end{{{begin_table}}}'''
 
+    return text
+
+
+def latex_replace(text):
+    # type: (str) -> str
+    for k, v in LATEX_REPLACE.items():
+        text = text.replace(k, v)
     return text

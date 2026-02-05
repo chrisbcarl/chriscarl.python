@@ -101,6 +101,15 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_3(self):
+        variables = [
+            (lib.latex_replace, (r'you know where that path leads… and you know thats not where you want to be', )),
+        ]
+        controls = [
+            r'you know where that path leads\cdots and you know thats not where you want to be',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -110,5 +119,6 @@ if __name__ == '__main__':
         tc.test_case_0()
         tc.test_case_1()
         tc.test_case_2()
+        tc.test_case_3()
     finally:
         tc.tearDown()
