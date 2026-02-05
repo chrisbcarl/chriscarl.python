@@ -6,10 +6,11 @@ Email:          chrisbcarl@outlook.com
 Date:           2026-01-25
 Description:
 
-core.functors.parse.latex is... TODO: lorem ipsum
+core.functors.parse.latex is stuff that mostly parses LaTeX.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-04 - core.functors.parse.latex - added latex_escape_raw and latex_escape is more straightforward...
     2026-01-25 - core.functors.parse.latex - initial commit
 '''
 
@@ -37,10 +38,13 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+REGEX_LATEX_ESCAPE_CHARS = re.compile(r'([\\$#%&~_^{}])')
 REGEX_LATEX_NEEDS_ESCAPE = re.compile(r'([^\\])([$#%&~_^{}])')
+REGEX_LATEX_NEEDS_ESCAPE_ENCLOSED = re.compile(r'([^\\])({[$#%&~_^{}]})')
+REGEX_LATEX_FIND_COMMAND_AND_INLINE = re.compile(r'(\\[a-zA-Z]{3,}(?:\{.*\})*|\\\(.+\\\))', flags=re.MULTILINE)
 
 
-def latex_escape(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
+def latex_escape_raw(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
     # type: (str, re.Pattern) -> str
     # find characters that are NOT escaped, and escape them...
     # catch characters in a row like _____
@@ -49,6 +53,35 @@ def latex_escape(substr, regex=REGEX_LATEX_NEEDS_ESCAPE):
         # {} within just causes problems.
         substr = regex_comp.sub(r'\1\\\2', substr)
     return substr
+
+
+def latex_escape(text):
+    # type: (str) -> str
+    # TODO: doesnt deal with brackets or custom stuff like \LaTeX is \(\text{great!}\)
+    # in between the non-math and away from the literal latex commands... do a raw regex escape.
+    tokens = []
+    prev_end = 0
+    for command_or_inline_mo in REGEX_LATEX_FIND_COMMAND_AND_INLINE.finditer(text):
+        start, end = command_or_inline_mo.span()
+        if start > prev_end:
+            substr = text[prev_end:start]
+            pure_latex = REGEX_LATEX_ESCAPE_CHARS.sub(r'\\\g<1>', substr)
+            tokens.append(pure_latex)  # the whole set
+
+        command_or_inline = text[start:end]
+        tokens.append(command_or_inline)
+        prev_end = end
+
+    if prev_end < len(text):
+        substr = text[prev_end:]
+        pure_latex = REGEX_LATEX_ESCAPE_CHARS.sub(r'\\\g<1>', substr)
+        tokens.append(pure_latex)  # the whole set
+    return ''.join(tokens)
+
+
+def latex_remove(text):
+    return REGEX_LATEX_ESCAPE_CHARS.sub('', text)
+
 
 ALIGNMENT_CHOICES = {
     'center': 'C',
@@ -86,13 +119,13 @@ def rows_to_latex(rows, caption=None, label=None, aligned='left'):
 
     columns = " & ".join(headers)
     table_text = '\\\\\n'.join(table_rows)
-#     comment = r'''% % https://tex.stackexchange.com/a/305413
-# % \usepackage{tabularx,booktabs}
-# % % defined centered version of "X" column type:
-# % \newcolumntype{C}{>{\centering\arraybackslash}X}
-# % \setlength{\extrarowheight}{1pt} % for a bit more open "look"
-# % \usepackage{lipsum} % filler text
-# '''
+    #     comment = r'''% % https://tex.stackexchange.com/a/305413
+    # % \usepackage{tabularx,booktabs}
+    # % % defined centered version of "X" column type:
+    # % \newcolumntype{C}{>{\centering\arraybackslash}X}
+    # % \setlength{\extrarowheight}{1pt} % for a bit more open "look"
+    # % \usepackage{lipsum} % filler text
+    # '''
     # TODO: can be changed to C instead of X, c instead of l for center
     #   this is because of the \newcolumntype{C}, not sure what else how to adjust
     column_alignment_statement = ''

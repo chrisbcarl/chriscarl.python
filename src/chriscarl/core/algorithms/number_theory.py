@@ -6,7 +6,7 @@ Email:          chrisbcarl@outlook.com
 Date:           2026-02-02
 Description:
 
-core.algorithms.number_theory is... TODO: lorem ipsum
+core.algorithms.number_theory is academic algorithmic knowledge I wish to re-inforce and retain in a record.
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:

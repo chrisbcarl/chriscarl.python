@@ -55,8 +55,8 @@ class TestCase(UnitTest):
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
-            (lib.latex_escape, (r'\_#$', )),
-            (lib.latex_escape, (r'\_#$', ), dict(regex=r'([^\\])([$%&~_^{}])')),
+            (lib.latex_escape_raw, (r'\_#$', )),
+            (lib.latex_escape_raw, (r'\_#$', ), dict(regex=r'([^\\])([$%&~_^{}])')),
         ]
         controls = [
             r'\_\#\$',
@@ -74,6 +74,22 @@ class TestCase(UnitTest):
         self.assertIn('\\caption{caption}', output)
         self.assertIn('\\label{label}', output)
 
+    def test_case_2(self):
+        variables = [
+            (lib.latex_escape, (r'\LaTeX', )),
+            (lib.latex_escape, (r'\LaTeX is \(\text{great!}\)', )),
+            (lib.latex_escape, (r'\LaTeX is 100% \(\text{great!}\)', )),
+            (lib.latex_escape, (r'____', )),
+        ]
+        controls = [
+            r'\LaTeX',  # no change
+            r'\LaTeX is \(\text{great!}\)',  # no change
+            r'\LaTeX is 100\% \(\text{great!}\)',  # changeeeee
+            r'\_\_\_\_',  # changeeeee
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
@@ -81,5 +97,6 @@ if __name__ == '__main__':
     try:
         tc.test_case_0()
         tc.test_case_1()
+        tc.test_case_2()
     finally:
         tc.tearDown()
