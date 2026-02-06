@@ -10,6 +10,7 @@ core.functors.parse.latex is stuff that mostly parses LaTeX.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-05 - core.functors.parse.latex - added evaluate
     2026-02-04 - core.functors.parse.latex - added latex_escape_raw and latex_escape is more straightforward...
                  core.functors.parse.latex - added latex_replace
     2026-01-25 - core.functors.parse.latex - initial commit
@@ -162,3 +163,10 @@ def latex_replace(text):
     for k, v in LATEX_REPLACE.items():
         text = text.replace(k, v)
     return text
+
+
+def evaluate(latex):
+    # type: (str) -> int|float
+    latex = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', latex)
+    latex = latex.replace('^', '**')
+    return eval(latex)

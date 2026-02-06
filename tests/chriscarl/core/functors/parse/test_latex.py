@@ -110,6 +110,19 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_4(self):
+        whole = 57
+        frac = 0.1875
+        variables = [
+            (lib.evaluate, (r'1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5', )),
+            (lib.evaluate, (r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}', )),
+        ]
+        controls = [
+            whole,
+            frac,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -120,5 +133,6 @@ if __name__ == '__main__':
         tc.test_case_1()
         tc.test_case_2()
         tc.test_case_3()
+        tc.test_case_4()
     finally:
         tc.tearDown()

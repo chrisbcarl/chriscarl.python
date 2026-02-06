@@ -8,6 +8,11 @@ Description:
 
 chriscarl.core.algorithms.number_theory unit test.
 
+# TODO:
+- redo but with wikipedia test cases...
+    - SP: https://en.wikipedia.org/wiki/Single-precision_floating-point_format
+    - DP: https://en.wikipedia.org/wiki/Double-precision_floating-point_format
+
 Updates:
     2026-02-02 - tests.chriscarl.core.algorithms.number_theory - initial commit
 '''
@@ -51,15 +56,110 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
+    # @unittest.skip('lorem ipsum')
+
     def test_case_0(self):
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (lib.base_n_to_10, ('1010', ), dict(base=2)),
+            (lib.base_n_to_10, ('-01011', ), dict(base=2)),
+            (lib.base_n_to_10, ('DEAD', ), dict(base=16)),
+            (lib.base_n_to_10, ('-BEEF', ), dict(base=16)),
+            (lib.base_n_to_10, ('e298', ), dict(base=16)),
+            (lib.base_n_to_10, ('1010.01011', ), dict(base=2)),
+            (lib.base_n_to_10, ('80085', ), dict(base=10)),
+            (lib.base_n_to_10, ('F.8', ), dict(base=16)),
+            (lib.base_n_to_10, ('0.01011', ), dict(base=2)),
+            (lib.base_n_to_10, ('.01011', ), dict(base=2)),
+            (lib.base_n_to_10, ('-.01011', ), dict(base=2)),
         ]
         controls = [
-            6,
-            6,
+            10,
+            -11,
+            57005,
+            -48879,
+            58008,
+            10.34375,
+            80085,
+            15.5,
+            0.34375,
+            0.34375,
+            -0.34375,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_1(self):
+        variables = [
+            (lib.ieee754_to_decimal, ('0.0.0...1', )),
+            (lib.ieee754_to_decimal, ('0...0.0...0', )),
+            (lib.ieee754_to_decimal, ('0...1.0...1', )),
+            (lib.ieee754_to_decimal, ('0...1.1...', )),
+            (lib.ieee754_to_decimal, ('0...1.1...1', )),
+            (lib.ieee754_to_decimal, ('000000000.00000000000000000000000', )),
+            (lib.ieee754_to_decimal, ('000000001.00000000000000000000001', )),
+            (lib.ieee754_to_decimal, ('000000001.11111111111111111111111', )),
+            (lib.ieee754_to_decimal, ('000000001.11111111111111111111111', )),
+            # -2.5
+            (lib.ieee754_to_decimal, ('110000000.010...0000', )),
+            (lib.ieee754_to_decimal, ('110000000.010…0000', )),
+        ]
+        controls = [
+            ValueError,
+            lib.ieee754_to_decimal('000000000.00000000000000000000000'),
+            lib.ieee754_to_decimal('000000001.00000000000000000000001'),
+            lib.ieee754_to_decimal('000000001.11111111111111111111111'),
+            lib.ieee754_to_decimal('000000001.11111111111111111111111'),
+            lib.ieee754_to_decimal('0...0.0...0'),
+            lib.ieee754_to_decimal('0...1.0...1'),
+            lib.ieee754_to_decimal('0...1.1...'),
+            lib.ieee754_to_decimal('0...1.1...1'),
+            lib.ieee754_to_decimal('110000000.010…0000'),
+            lib.ieee754_to_decimal('110000000.010...0000'),
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_2(self):
+        variables = [
+            (lib.ieee754_to_decimal, ('101111111.00000000000000000000000', )),
+            (lib.ieee754_to_decimal, ('101....0...', )),
+            (lib.ieee754_to_decimal, ('101….0…', )),
+            (lib.ieee754_to_decimal, ('0….0…', )),
+            (lib.ieee754_to_decimal, ('0....0...', )),
+            (lib.ieee754_to_decimal, ('0….0…', )),
+            (lib.ieee754_to_decimal, ('1….0…', )),
+            (lib.ieee754_to_decimal, ('01….0…', )),
+            (str, (lib.ieee754_to_decimal('01….10…'), )),  # nan equality not possible
+            (lib.ieee754_to_decimal, ('0...1.000100010...', )),
+            # (lib.ieee754_to_decimal, ('0....0...1', )),  # BUG: mine cannot go that low not sure exactly why...
+        ]
+        controls = [
+            -1.0,
+            -1.0,
+            -1.0,
+            0,
+            0,
+            0,
+            float('-inf'),
+            float('inf'),
+            str(float('nan')),
+            1.2535545225565800377947854479E-38,  # https://www.binaryconvert.com/result_float.html?hexadecimal=00888000
+            # 1.40129846432481707092372958329E-45,  # https://www.binaryconvert.com/result_float.html?hexadecimal=00000001
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_3(self):
+        variables = [
+            (lib.ieee754_to_decimal, ('101111111111.0000000000000000000000000000000000000000000000000000', )),
+            (lib.ieee754_to_decimal, ('101....0...', ), dict(double=True)),
+            (lib.ieee754_to_decimal, ('101….0…', ), dict(double=True)),
+            (lib.ieee754_to_decimal, ('0...1.000100010...', ), dict(double=True)),
+            # (lib.ieee754_to_decimal, ('0....0...1', ), dict(double=True)),  # BUG: either I or python can't calculate exactly right
+        ]
+        controls = [
+            -1.0,
+            -1.0,
+            -1.0,
+            2.37283266942369522493606848372E-308,  # https://www.binaryconvert.com/result_double.html?hexadecimal=0011100000000000
+            # 4.94065645841246544176568792868E-324  # https://www.binaryconvert.com/result_double.html?hexadecimal=0000000000000001
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -70,5 +170,8 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
+        tc.test_case_2()
+        tc.test_case_3()
     finally:
         tc.tearDown()

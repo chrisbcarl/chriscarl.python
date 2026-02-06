@@ -6,10 +6,11 @@ Email:          chrisbcarl@outlook.com
 Date:           2026-02-02
 Description:
 
-core.algorithms.number_theory is academic algorithmic knowledge I wish to re-inforce and retain in a record.
+core.algorithms.number_theory contains stuff like IEEE754
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-05 - core.algorithms.number_theory - touch-ups
     2026-02-02 - core.algorithms.number_theory - initial commit
 '''
 
@@ -18,6 +19,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import re
 
 # third party imports
 
@@ -39,18 +41,19 @@ import string
 DIGIT_POWER = list(str(idx) for idx in range(10)) + list(string.ascii_uppercase)
 
 
-def base_n_to_base_10(value, base=2):
+def base_n_to_10(value, base=2):
     # type: (str, int) -> int|float
     '''
-    NOTE: NOT 2's comp representation. 10000000 is treated as 2^7, not -1
-    should cover the following assignment requests
-    base_n to base 10(signed)
-            binary to decimal - 57b
-            ocal to decimal - 58c
-            hex to decimal - 59a
-    >>> base_n_to_base_10('1010.01011', base=2, signed=False) -> 10.34375
-    >>> base_n_to_base_10('F.8', base=16, signed=False) -> 15.5
-    >>> base_n_to_base_10('-.01011', base=2, signed=False) -> 0.34375
+    Description:
+        $(v)_{n} = (v')_{10}$
+        - NOTE: negatives are not represented in 2's comp. 10000000 is treated as 2^7, not -1
+    Examples:
+        >>> base_n_to_10('1010.01011', base=2, signed=False) -> 10.34375
+        >>> base_n_to_10('F.8', base=16, signed=False) -> 15.5
+        >>> base_n_to_10('-.01011', base=2, signed=False) -> 0.34375
+    Returns:
+        int|float
+            number in base 10
     '''
     value = str(value)
     # step 1, note the sign
@@ -89,28 +92,39 @@ def base_n_to_base_10(value, base=2):
     return float(res)
 
 
-base_n_to_base_10('1010', base=2)
-base_n_to_base_10('-01011', base=2)
-base_n_to_base_10('DEAD', base=16)
-base_n_to_base_10('-BEEF', base=16)
-base_n_to_base_10('e298', base=16)  # 58008
-base_n_to_base_10('1010.01011', base=2)
-assert base_n_to_base_10('80085', base=10) == 80085
-assert base_n_to_base_10('F.8', base=16) == 15.5
-base_n_to_base_10('0.01011', base=2)
-base_n_to_base_10('.01011', base=2)
-assert base_n_to_base_10('-.01011', base=2) == -0.34375
-
-import re
+def _ieee754_to_decimal_elipses(txt, bits):
+    if '>' not in txt:
+        return txt
+    left, right = txt.split('>')
+    used_bits = len(left) + len(right)
+    bits = bits - used_bits
+    repeated = left[-1]
+    return f'{left}{repeated * bits}{right}'
 
 
-def ieee754_to_decimal(binstr, double=False):
+def ieee754_to_decimal(value, double=False):
     # type: (str, bool) -> float
-    if not re.match(r'[01\.…]{4,64}', binstr):
-        raise ValueError('binstr must at least be 00.0, composed of 0s and 1s and a few dots. right?')
-    width = (binstr.count('0') + binstr.count('1'))
+    '''
+    Description:
+        these are all -1.0 (single-precision), note the unicode, elipses, and decimal:
+            101111111.00000000000000000000000
+            101....0...
+            101….0…
+    Arguments:
+        value: str
+        double: bool
+            default False
+            do you know if this is provided as a double-precision?
+    Returns:
+        float
+            it always has to be a float return, can't be an int...
+    '''
+    # original = value
+    if not re.match(r'[01\.…]{4,64}', value):
+        raise ValueError('value must at least be 00.0, composed of 0s and 1s and a few dots. right?')
+    width = (value.count('0') + value.count('1'))
     if width > 64:
-        raise NotImplementedError(f'for str size {len(binstr)}')
+        raise NotImplementedError(f'for str size {len(value)}')
     if not double:
         if width > 32:
             double = True
@@ -118,34 +132,26 @@ def ieee754_to_decimal(binstr, double=False):
     f_len = 52 if double else 23
     b = 2**(e_len - 1) - 1  # bias
 
-    binstr = re.sub(r'(\.\.\.|…)', '>', binstr)  # replace ALL expanders with a common expander
-    mo = re.search(r'\.\d', binstr)
-    if not mo:
-        raise ValueError(f'could not detect decimal point, must resemble \\.\\d even with compaction! {binstr!r}')
-    sign_exp = binstr[:mo.start()]
-    if len(sign_exp) == 2:
-        sign, exp = sign_exp[0], sign_exp  # case when 0....0... or 1....0...
-    else:
-        sign, exp = sign_exp[0], sign_exp[1:]
-
-    frac = binstr[mo.start() + 1:]
-
-    def elipses(txt, bits):
-        if '>' not in txt:
-            return txt
-        left, right = txt.split('>')
-        used_bits = len(left) + len(right)
-        bits = bits - used_bits
-        repeated = left[-1]
-        return f'{left}{repeated * bits}{right}'
-
+    value = re.sub(r'(\.\.\.|…)', '>', value)  # replace ALL expanders with a common expander
+    mos = list(re.finditer(r'\.\d', value))
+    if not mos or len(mos) > 1:
+        raise ValueError(f'could not detect decimal point, must resemble only \\.\\d even with compaction! {value!r}')
+    mo = mos[0]
+    sign_exp = value[:mo.start()]
+    sign, exp = sign_exp[0], sign_exp[1:]
     s = 0 if sign == '0' else 1
 
-    expX, fracX = elipses(exp, e_len), elipses(frac, f_len)
+    # exp will be of the form 00000000, 0>0 or >0
+    if exp.startswith('>'):
+        exp = sign_exp  # the original because the user wanted the sign bit to repeat...
+
+    frac = value[mo.start() + 1:]
+
+    expX, fracX = _ieee754_to_decimal_elipses(exp, e_len), _ieee754_to_decimal_elipses(frac, f_len)
     # special cases
     if expX.count('0') == e_len:
         if fracX.count('0') == f_len:
-            return 0
+            return 0.0
         # valid data, just needs to be normalized, will be quite small
     if expX.count('1') == e_len:
         if fracX.count('0') == f_len:
@@ -156,55 +162,28 @@ def ieee754_to_decimal(binstr, double=False):
         else:
             return float('nan')
 
-    e = base_n_to_base_10(expX, base=2)
-    f = base_n_to_base_10(f'0.{fracX}', base=2)
+    e = base_n_to_10(expX, base=2)
+    f = base_n_to_10(f'0.{fracX}', base=2)
     n = (1 - 2 * s) * (1 + f) * 2**(e - b)
-    # print({'binstr': binstr, 'double': double, 'exp': exp, 'frac': frac, 'expX': expX, 'fracX': fracX, 's': s, 'e': e, 'b': b, 'f': f, 'n': n, 'e_len': e_len, 'f_len': f_len})
+    # normalized = f'{"-" if sign else ""}1.{fracX} * 2**({e-b})'
+    # print(
+    #     {
+    #         'original': original,
+    #         'value': value,
+    #         'double': double,
+    #         'exp': exp,
+    #         'frac': frac,
+    #         'expX': expX,
+    #         'fracX': fracX,
+    #         's': s,
+    #         'e': e,
+    #         'b': b,
+    #         'f': f,
+    #         'e_len': e_len,
+    #         'f_len': f_len,
+    #         'normalized': normalized,
+    #         'n': n,
+    #     }
+    # )
 
     return float(n)
-
-
-# equivalent, -1.0, q4
-ieee754_to_decimal('101111111.00000000000000000000000')
-ieee754_to_decimal('101....0...')
-ieee754_to_decimal('101….0…')
-
-ieee754_to_decimal('0….0…')
-ieee754_to_decimal('0....0...')
-assert ieee754_to_decimal('0….0…') == 0
-assert ieee754_to_decimal('1….0…') == float('-inf')
-assert ieee754_to_decimal('01….0…') == float('inf')
-assert str(ieee754_to_decimal('01….10…')) == str(float('nan'))
-
-# double, -1.0
-ieee754_to_decimal('101111111111.0000000000000000000000000000000000000000000000000000')
-ieee754_to_decimal('101....0...', double=True)
-ieee754_to_decimal('101….0…', double=True)
-
-# q5
-ieee754_to_decimal('001000...0.110...0000', double=True)
-ieee754_to_decimal('001000000000.1100000000000000000000000000000000000000000000000000')
-
-ieee754_to_decimal('10....0...1')
-ieee754_to_decimal('101111111.00000000000000000000000', double=True)
-ieee754_to_decimal('101...1.0...0')
-ieee754_to_decimal('110000000.010...0000')
-ieee754_to_decimal('110000000.010…0000')
-ieee754_to_decimal('001000...0.110...0000')
-ieee754_to_decimal('001000…0.110…0000')
-ieee754_to_decimal('001000...0.110...0000', double=True)
-ieee754_to_decimal('001000…0.110…0000', double=True)
-
-import re
-
-
-def compute_math(txt):
-    txt = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', txt)
-    txt = txt.replace('^', '**')
-    print(txt)
-    return eval(txt)
-
-
-whole = compute_math('1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5')
-frac = compute_math(r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}')
-print(whole + frac)

@@ -3,6 +3,9 @@
     unittest
         on failed unit test, print the experiment on the left, the control on the right, vars if you have to...
 
+    subprocess
+        monitor the file, see if its size hasn't increased in seconds, then auot-kill
+
     are new features added that arent in the FEATURES doc?
     are all prod features in the commit messages?
     move all staged features to prod
