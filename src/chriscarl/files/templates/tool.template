@@ -48,26 +48,6 @@ DEFAULT_LOG_FILEPATH = abspath(TEMP_DIRPATH, '{module_dot_path}.log')
 # tool constants
 
 
-def fast_fib(n, debug=False, a=0, b=1):
-    # type: (int, bool, int, int) -> Generator[int, None, None]
-    if debug:
-        LOGGER.debug('a = %s; b = %s', a, b)
-    yield 0
-    yield 1
-    for i in range(3, n + 1):  # because we're calculating the 3rd number
-        c = a + b
-        if debug:
-            LOGGER.debug('a = %s; b = %s; c = %s; i = %s', a, b, c, i)
-        yield c
-        a = b
-        b = c
-        if debug:
-            LOGGER.debug('\tafter swapping c, b, a...')
-            LOGGER.debug('\ta = %s; b = %s; c = %s; i = %s', a, b, c, i)
-    if debug:
-        LOGGER.debug('finished %s steps!', n)
-
-
 @dataclass
 class Arguments:
     '''
@@ -82,8 +62,8 @@ class Arguments:
     log_level: str = 'INFO'
     log_filepath: str = DEFAULT_LOG_FILEPATH
 
-    @staticmethod
-    def argparser():
+    @classmethod
+    def argparser(cls):
         # type: () -> ArgumentParser
         parser = ArgumentParser(prog=SCRIPT_NAME, description=__doc__, formatter_class=ArgparseNiceFormat)
         app = parser.add_argument_group('app')
@@ -105,31 +85,52 @@ class Arguments:
             self.log_level = 'DEBUG'
         configure_ez(level=self.log_level, filepath=self.log_filepath)
 
-    @staticmethod
-    def parse(parser=None, argv=None):
+    @classmethod
+    def parse(cls, parser=None, argv=None):
         # type: (Optional[ArgumentParser], Optional[List[str]]) -> Arguments
-        parser = parser or Arguments.argparser()
+        parser = parser or cls.argparser()
         ns = parser.parse_args(argv)
-        arguments = Arguments(**(vars(ns)))
+        arguments = cls(**(vars(ns)))
         arguments.process()
         return arguments
 
 
+def fast_fib(n, debug=False, a=0, b=1):
+    # type: (int, bool, int, int) -> Generator[int, None, None]
+    if debug:
+        LOGGER.debug('a = %s; b = %s', a, b)
+    yield 0
+    yield 1
+    for i in range(3, n + 1):  # because we're calculating the 3rd number
+        c = a + b
+        if debug:
+            LOGGER.debug('a = %s; b = %s; c = %s; i = %s', a, b, c, i)
+        yield c
+        a = b
+        b = c
+        if debug:
+            LOGGER.debug('\tafter swapping c, b, a...')
+            LOGGER.debug('\ta = %s; b = %s; c = %s; i = %s', a, b, c, i)
+    if debug:
+        LOGGER.debug('finished %s steps!', n)
+
+
 def main():
     # type: () -> int
-    parser = Arguments.argparser()
+    parser = cls.argparser()
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
 
     args = Arguments.parse(parser=parser)
+
     numbers = []
     for fib in fast_fib(args.n, debug=args.debug, a=args.init[0], b=args.init[1]):
         numbers.append(fib)
 
     if args.debug:
         LOGGER.debug('numbers: %s', numbers)
-    LOGGER.info(numbers[-1])
+    fib = numbers[-1]
 
     if args.messages:
         with open(abspath(args.output_dirpath, 'out'), 'w', encoding='utf-8') as w:

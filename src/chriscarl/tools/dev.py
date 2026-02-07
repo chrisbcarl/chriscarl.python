@@ -93,8 +93,8 @@ class Mode:
         configure_ez(level=mode.log_level, filepath=mode.log_filepath)
         sys.exit(mode.run())
 
-    @staticmethod
-    def add_common_arguments(parser, log_levels=None):
+    @classmethod
+    def add_common_arguments(cls, parser, log_levels=None):
         # type: (ArgumentParser, Optional[List[str]]) -> ArgumentParser
         log_levels = log_levels or list(NAME_TO_LEVEL)
         parser.add_argument('--cwd', type=str, default=os.getcwd(), help='cd to this directory')
@@ -317,9 +317,10 @@ class Audit(Mode):
 
         return mode
 
-    @staticmethod
-    def add_common_arguments(parser):
-        Mode.add_common_arguments(parser)
+    @classmethod
+    def add_common_arguments(cls, parser, log_levels=None):
+        # type: (ArgumentParser, Optional[List[str]]) -> ArgumentParser
+        Mode.add_common_arguments(parser, log_levels=log_levels)
         parser.add_argument('--dirpath', type=str, default=REPO_DIRPATH, help='where do we start crawling?')
         parser.add_argument('--included_dirs', type=str, nargs='+', default=['src/', 'tests/'], help='any directories that you do care about, and run them relatively to dirpath?')
         parser.add_argument('--no-modify', action='store_true', help='do not modify?')
@@ -329,6 +330,8 @@ class Audit(Mode):
         parser.add_argument('--words-filepath', type=str, default=DEFAULT_BANNED_WORDS_FILEPATH, help='filepath with a bunch of words you want banned?')
         parser.add_argument('--words-additional', type=str, nargs='+', default=[], help='add some other words in addition to the filepath or if the file doesnt exist?')
         parser.add_argument('--threshold', type=float, default=DEFAULT_THRESHOLD, help='any file that falls below this threshold is called out')
+
+        return parser
 
     def run(self):
         # type: () -> int

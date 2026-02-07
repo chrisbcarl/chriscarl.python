@@ -111,7 +111,7 @@ class Arguments:
     log_level: str = 'INFO'
     log_filepath: str = DEFAULT_LOG_FILEPATH
 
-    @staticmethod
+    @classmethod
     def add_command(parser, func):
         # type: (_SubParsersAction, Callable) -> ArgumentParser
         mode = parser.add_parser(func.__name__, help=func.__doc__)
@@ -128,8 +128,8 @@ class Arguments:
 
         return mode
 
-    @staticmethod
-    def argparser():
+    @classmethod
+    def argparser(cls):
         # type: () -> ArgumentParser
         example_mode = 'lines_to_headers'
 
@@ -157,19 +157,19 @@ class Arguments:
             self.log_level = 'DEBUG'
         configure_ez(level=self.log_level, filepath=self.log_filepath)
 
-    @staticmethod
+    @classmethod
     def parse(parser=None, argv=None):
         # type: (Optional[ArgumentParser], Optional[List[str]]) -> Arguments
-        parser = parser or Arguments.argparser()
+        parser = parser or cls.argparser()
         ns = parser.parse_args(argv)
-        arguments = Arguments(**(vars(ns)))
+        arguments = cls(**(vars(ns)))
         arguments.process()
         return arguments
 
 
 def main():
     # type: () -> int
-    parser = Arguments.argparser()
+    parser = cls.argparser()
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
