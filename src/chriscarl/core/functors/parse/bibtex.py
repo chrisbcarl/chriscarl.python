@@ -40,6 +40,9 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-z_-]+)\{(?P<label>[A-Za-z0-9_\-\.]+)?,?')
+BIBTEX_ARTICLES = set(
+    ['article', 'inproceedings', 'proceedings', 'book', 'booklet', 'inbook', 'incollection', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'techreport', 'unpublished', 'misc']
+)
 
 
 def get_labels(text, nulls=False):
