@@ -19,7 +19,7 @@ import os
 import sys
 import json
 import logging
-from typing import Union
+from typing import Dict
 
 # third party imports
 
@@ -39,7 +39,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 def read_json(filepath, encoding='utf-8'):
-    # type: (str, str) -> dict
+    # type: (str, str) -> Dict[str, str]
     try:
         with open(filepath, 'r', encoding=encoding) as r:
             return json.load(r)

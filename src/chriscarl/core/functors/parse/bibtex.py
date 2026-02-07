@@ -150,7 +150,7 @@ def extract_from(text, pretty=True, indent=4):
 
 
 def get_label_citation(text, parse=True, pretty=True, indent=4, nulls=False, dedupe=False):
-    # type: (str, bool, bool, int, bool, bool) -> dict
+    # type: (str, bool, bool, int, bool, bool) -> Dict[str, str]
     '''
     Description:
         given ANY text, get a map of its keys to its citation text

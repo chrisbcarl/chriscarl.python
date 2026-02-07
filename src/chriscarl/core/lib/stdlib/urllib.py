@@ -332,7 +332,7 @@ class Response():
 
     @property
     def json(self):
-        # type: () -> dict
+        # type: () -> Dict[str, str]
         if not self.__json:
             self.__json = json.loads(self.body)
         return self.__json

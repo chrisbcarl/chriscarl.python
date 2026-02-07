@@ -19,7 +19,7 @@ import os
 import sys
 import logging
 import collections
-from typing import Mapping
+from typing import Mapping, Any
 
 # third party imports
 
@@ -50,7 +50,7 @@ def namedtuple_with_defaults(typename, field_names, default_values=()):
 
 
 def unordered_dict(ordered):
-    # type: (collections.OrderedDict) -> dict
+    # type: (collections.OrderedDict) -> dict|list|Any
     if isinstance(ordered, dict):
         ret = {}
         for k, v in ordered.items():
