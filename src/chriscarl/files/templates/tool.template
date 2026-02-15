@@ -18,7 +18,7 @@ import os
 import sys
 import logging
 from typing import List, Generator, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from argparse import ArgumentParser
 
 # third party imports
@@ -93,6 +93,9 @@ class Arguments:
         arguments = cls(**(vars(ns)))
         arguments.process()
         return arguments
+
+    def to_dict(self):
+        return {fie.name: getattr(self, fie.name) for fie in fields(self)}
 
 
 def fast_fib(n, debug=False, a=0, b=1):

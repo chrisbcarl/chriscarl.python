@@ -10,6 +10,7 @@ core.functors.parse.bibtex is funcs that deal with text that is hopefully bibtex
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-15 - core.functors.parse.bibtex - apparently spaces to the keys is legal
     2026-02-04 - core.functors.parse.bibtex - added extract_from_and_remove, get_label_citation--slight re-work to support extracting non-bibtex and dealing with label duplicates and nulls
     2026-02-01 - core.functors.parse.bibtex - periods work as keys
     2026-01-25 - core.functors.parse.bibtex - initial commit
@@ -39,7 +40,7 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-z_-]+)\{(?P<label>[A-Za-z0-9_\-\.]+)?,?')
+REGEX_BIBTEX_CITATION_KEY = re.compile(r'@(?P<type>[a-zA-Z_-]+)\s*\{(?P<label>[A-Za-z0-9_\-\.]+)?,?')
 BIBTEX_ARTICLES = set(
     ['article', 'inproceedings', 'proceedings', 'book', 'booklet', 'inbook', 'incollection', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'techreport', 'unpublished', 'misc']
 )

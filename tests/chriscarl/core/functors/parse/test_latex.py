@@ -116,10 +116,16 @@ class TestCase(UnitTest):
         variables = [
             (lib.evaluate, (r'1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5', )),
             (lib.evaluate, (r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}', )),
+            (lib.evaluate, (r'\sqrt{\frac{1}{2^2}}', )),
+            (lib.evaluate, (r'\sqrt{\frac{1}{4}((50 - 56)^2 + (40 - 56)^2 + (70 - 56)^2 + (75 - 56)^2 + (45 - 56)^2)}', )),
+            (lib.evaluate, (r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', )),
         ]
         controls = [
             whole,
             frac,
+            0.5,
+            15.572411502397436,
+            -2.01,
         ]
         self.assert_null_hypothesis(variables, controls)
 

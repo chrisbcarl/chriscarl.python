@@ -10,6 +10,7 @@ core.functors.parse.latex is stuff that mostly parses LaTeX.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-15 - core.functors.parse.latex - augmented evaluate, need for proper stack solution obvious
     2026-02-05 - core.functors.parse.latex - added evaluate
     2026-02-04 - core.functors.parse.latex - added latex_escape_raw and latex_escape is more straightforward...
                  core.functors.parse.latex - added latex_replace
@@ -22,6 +23,7 @@ import os
 import sys
 import logging
 import re
+import math
 from typing import List, Optional
 
 # third party imports
@@ -167,6 +169,10 @@ def latex_replace(text):
 
 def evaluate(latex):
     # type: (str) -> int|float
+    # TODO: fails on r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', will need a flexible command level stack-based solution...
     latex = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', latex)
+    latex = re.sub(r'\\sqrt\{([^\}]+)\}', r'math.sqrt(\g<1>)', latex)
     latex = latex.replace('^', '**')
+    latex = latex.replace(')(', ') * (')
+    latex = re.sub(r'(\d)\s*\(', r'\g<1> * (', latex)
     return eval(latex)
