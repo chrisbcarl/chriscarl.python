@@ -18,7 +18,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Optional, Generator, Tuple
+from typing import Any
 
 # third party imports
 
@@ -35,25 +35,20 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-# pretty print a binary tree
-import math
-import random
-from typing import List, Any
-
 
 class Node(object):
-    neighbors = []  # type: List[Optional['Node']]
+    neighbors = []  # type: list
     data = None  # type: Any
 
     def __init__(self, data):
-        self.neighbors = []
         self.data = data
+        self.neighbors = []
 
     def __str__(self):
-        return f'Node[{self.data}]'
+        return f'{self.__class__.__name__}[{self.data}]'
 
     def __repr__(self):
-        return f'Node[{self.data}, {len(self.neighbors)}E]'
+        return f'{self.__class__.__name__}[{self.data}, {len([neighbor for neighbor in self.neighbors if neighbor])}E]'
 
     def __eq__(self, other):
         if not isinstance(other, Node):
@@ -72,9 +67,7 @@ class Node(object):
 
     def add_edge(self, node):
         # type: (Node|Any) -> Node
-        if not isinstance(node, Node):
-            node = Node(node)
-        self.neighbors.append(node)
+        self.neighbors.append(Node(node))
         return node
 
     @property

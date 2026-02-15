@@ -6,10 +6,10 @@ Email:          chrisbcarl@outlook.com
 Date:           2026-02-15
 Description:
 
-chriscarl.core.data_structures.node unit test.
+chriscarl.core.data_structures.singly_linked_list unit test.
 
 Updates:
-    2026-02-15 - tests.chriscarl.core.data_structures.node - initial commit
+    2026-02-15 - tests.chriscarl.core.data_structures.singly_linked_list - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -27,9 +27,9 @@ from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.core.data_structures.node as lib
+import chriscarl.core.data_structures.singly_linked_list as lib
 
-SCRIPT_RELPATH = 'tests/core/data_structures/test_node.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/test_singly_linked_list.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -53,30 +53,25 @@ class TestCase(UnitTest):
 
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
-        n0 = lib.Node(0)
-        n1 = lib.Node(1)
-        n0.add_edge(n1)
-        n0.add_edge(3)
-        n0.add_edge(5)
-        n2 = lib.Node(1)
-        repr(n2)
+        lst = list(range(5))
+        sll = lib.SinglyLinkedList.from_list(lst)
+        sll2 = lib.SinglyLinkedList.from_list(lst)
+        sll3 = lib.SinglyLinkedList(5)
         variables = [
-            (lambda x, y: x == y, (n0, n0)),
-            (lambda x, y: x == y, (n0, n1)),
-            (lambda x, y: x < y, (n0, n0)),
-            (lambda x, y: x < y, (n0, n1)),
-            (str, n0),
-            (repr, n0),
-            (repr, n2),
+            (sll.to_list),
+            (str, sll),
+            (lib.count, sll.head),
+            (len, sll),
+            (sll.__eq__, sll2),
+            (sll.__ne__, sll3),
         ]
         controls = [
+            lst,
+            '0 -> 1 -> 2 -> 3 -> 4',
+            5,
+            5,
             True,
-            False,
-            False,
             True,
-            'Node[0]',
-            'Node[0, 3E]',
-            'Node[1, 0E]',
         ]
         self.assert_null_hypothesis(variables, controls)
 
