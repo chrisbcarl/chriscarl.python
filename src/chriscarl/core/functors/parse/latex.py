@@ -10,11 +10,15 @@ core.functors.parse.latex is stuff that mostly parses LaTeX.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-16 - core.functors.parse.latex - added matrix_to_latex
     2026-02-15 - core.functors.parse.latex - augmented evaluate, need for proper stack solution obvious
     2026-02-05 - core.functors.parse.latex - added evaluate
     2026-02-04 - core.functors.parse.latex - added latex_escape_raw and latex_escape is more straightforward...
                  core.functors.parse.latex - added latex_replace
     2026-01-25 - core.functors.parse.latex - initial commit
+
+TODO:
+- BUG: bottom
 '''
 
 # stdlib imports
@@ -23,13 +27,15 @@ import os
 import sys
 import logging
 import re
-import math
-from typing import List, Optional
+import math  # needed for sqrt evaluate
+from typing import List, Optional, Any
 
 # third party imports
 
 # project imports
-from chriscarl.core.types.list import rows_to_str_rows
+from chriscarl.core.lib.stdlib.typing import isinstance_raise
+from chriscarl.core.types.str import indent
+from chriscarl.core.types.list import rows_to_str_rows, matrix_to_str_rows
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/parse/latex.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -169,10 +175,33 @@ def latex_replace(text):
 
 def evaluate(latex):
     # type: (str) -> int|float
-    # TODO: fails on r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', will need a flexible command level stack-based solution...
+    # BUG: fails on r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', will need a flexible command level stack-based solution...
     latex = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', latex)
     latex = re.sub(r'\\sqrt\{([^\}]+)\}', r'math.sqrt(\g<1>)', latex)
     latex = latex.replace('^', '**')
     latex = latex.replace(')(', ') * (')
     latex = re.sub(r'(\d)\s*\(', r'\g<1> * (', latex)
     return eval(latex)
+
+
+def matrix_to_latex(array, column_vector=True, one_line=False):
+    # type: (List[Any] | List[List[Any]], bool, bool) -> str
+    if not column_vector:
+        raise NotImplementedError("not sure how to represent otherwise especially for multi-d matricies...")
+    isinstance_raise(array, (List[Any], List[List[Any]]))
+    if not isinstance(array[0], list):
+        return rf'\begin{{bmatrix}}{"\\\\".join(str(ele) for ele in array)}\end{{bmatrix}}'
+    else:
+        if isinstance(array[0][0], list):
+            raise NotImplementedError('too deeply nested!')
+
+        rows, _, max_str_len = matrix_to_str_rows(array)
+        fmt = '{:%ds}' % max_str_len
+        tokens = ['\\begin{bmatrix}']
+        for row in rows:
+            tokens.append(f'{" & ".join(fmt.format(r) for r in row)} \\\\')
+        tokens.append('\\end{bmatrix}')
+        if one_line:
+            return ' '.join(tokens)
+        else:
+            return f'{tokens[0]}\n{indent("\n".join(tokens[1:-1]))}\n{tokens[-1]}'

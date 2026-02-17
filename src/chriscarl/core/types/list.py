@@ -10,6 +10,7 @@ core.types.list is all about these array-lists.
 core.types are modules that pertain to data structures, algorithms, conversions. non-self-referential, low-import, etc.
 
 Updates:
+    2025-02-16 - core.types.list - FIX: would skip over 0's as not real values...
     2025-01-31 - core.types.list - added rows_to_str_rows
     2025-01-14 - core.types.list - removed contains
     2025-01-01 - core.types.list - added n_sized_chunks and n_chunks
@@ -144,7 +145,7 @@ def rows_to_str_rows(rows, on_list=None):
         for key, value in row.items():
             if key not in headers:
                 headers.append(key)
-            value_str = str(value) if value else ''
+            value_str = str(value) if value is not None else ''
             if isinstance(value, (set, list, dict)):
                 if isinstance(value, list):
                     if not on_list:
@@ -158,3 +159,17 @@ def rows_to_str_rows(rows, on_list=None):
     max_col_count = max([max_col_count] + [len(header) for header in headers])
 
     return row_strs, headers, max_col_count
+
+
+def matrix_to_str_rows(matrix, on_list=None):
+    # type: (List[List[Any]], Optional[Callable[[list], str]]) -> Tuple[List[List[str]], List[str], int]
+    isinstance_raise(matrix, List[List[Any]])
+    rows = []
+    for row in matrix:
+        rows.append({str(idx): val for idx, val in enumerate(row)})
+    row_strs, headers, max_col_count = rows_to_str_rows(rows, on_list=on_list)
+    matrix_reloaded = [list(row_str.values()) for row_str in row_strs]
+    return matrix_reloaded, headers, max_col_count
+
+
+matrix_to_str_rows.__doc__ = (rows_to_str_rows.__doc__ or '').replace(rows_to_str_rows.__name__, matrix_to_str_rows.__name__)

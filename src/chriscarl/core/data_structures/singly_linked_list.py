@@ -11,6 +11,11 @@ core are modules that define the bedrock from which other things do import. non-
 
 Updates:
     2026-02-15 - core.data_structures.singly_linked_list - initial commit
+
+# TODO:
+remove
+insert
+index
 '''
 
 # stdlib imports
@@ -66,16 +71,6 @@ class SinglyLinkedList():
             self.head = SllNode(node_or_data)
         self.size = count(self.head)
 
-    def to_list(self):
-        # type: () -> List[Any]
-        return to_list(self.head)
-
-    @classmethod
-    def from_list(cls, lst):
-        # type: (List[Any]) -> SinglyLinkedList
-        head = from_list(lst)
-        return SinglyLinkedList(head)
-
     def __str__(self):
         return to_str(self.head)
 
@@ -96,12 +91,19 @@ class SinglyLinkedList():
             return True
         return False
 
+    def to_list(self):
+        # type: () -> List[Any]
+        return to_list(self.head)
+
+    @classmethod
+    def from_list(cls, lst):
+        # type: (List[Any]) -> SinglyLinkedList
+        head = from_list(lst)
+        return SinglyLinkedList(head)
+
     def append(self, value):
         # type: (SllNode|Any) -> None
-        ptr = self.head
-        while ptr.next:
-            ptr = ptr.next
-        ptr.next = value if isinstance(value, SllNode) else SllNode(value)
+        append(self.head, value)
         self.size = count(self.head)
 
 
@@ -135,6 +137,14 @@ def count(head):
         cnt += 1
         ptr = ptr.next
     return cnt
+
+
+def append(head, value):
+    # type: (SllNode, SllNode|Any) -> None
+    ptr = head
+    while ptr.next:
+        ptr = ptr.next
+    ptr.next = value if isinstance(value, SllNode) else SllNode(value)
 
 
 def to_str(head):

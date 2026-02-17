@@ -129,16 +129,40 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_5(self):
+        matrix = [
+            [0, 1, 2, 3],
+            [10, 11, 12, 13],
+            [20, 21, 22, 23],
+        ]
+        vector = matrix[0]
+        variables = [
+            (lib.matrix_to_latex, (vector, ), dict(one_line=True)),
+            (lib.matrix_to_latex, (matrix, ), dict(one_line=True)),
+            (lib.matrix_to_latex, (matrix, ), dict(one_line=False)),
+        ]
+        controls = [
+            r'\begin{bmatrix}0\\1\\2\\3\end{bmatrix}',
+            r'\begin{bmatrix} 0  & 1  & 2  & 3  \\ 10 & 11 & 12 & 13 \\ 20 & 21 & 22 & 23 \\ \end{bmatrix}',
+            r'''\begin{bmatrix}
+    0  & 1  & 2  & 3  \\
+    10 & 11 & 12 & 13 \\
+    20 & 21 & 22 & 23 \\
+\end{bmatrix}''',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
     try:
-        tc.test_case_0()
-        tc.test_case_1()
-        tc.test_case_2()
-        tc.test_case_3()
-        tc.test_case_4()
+        # tc.test_case_0()
+        # tc.test_case_1()
+        # tc.test_case_2()
+        # tc.test_case_3()
+        # tc.test_case_4()
+        tc.test_case_5()
     finally:
         tc.tearDown()
