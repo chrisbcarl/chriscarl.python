@@ -101,7 +101,7 @@ def main():
     '''
     # FEATURE: tool-lf
     '''
-    parser = cls.argparser()
+    parser = Arguments.argparser()
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)

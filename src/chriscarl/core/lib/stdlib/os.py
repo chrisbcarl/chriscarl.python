@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-02-20 - core.lib.stdlib.os - added walk_regex
     2026-01-30 - core.lib.stdlib.os - added wait_for_new_file, listdir
     2026-01-25 - core.lib.stdlib.os - added filename
     2026-01-06 - core.lib.stdlib.os - added is_file, is_dir
@@ -26,7 +27,7 @@ import sys
 import re
 import string
 import logging
-from typing import Generator, Optional, List
+from typing import Generator, Optional, List, Union
 import time
 
 # third party imports
@@ -131,6 +132,14 @@ def walk(root_dirpath, extensions=None, ignore=None, include=None, case_insensit
                 yield bname
             else:
                 yield abspath(dirpath, filename)
+
+
+def walk_regex(root_dirpath, regex, extensions=None, ignore=None, include=None, case_insensitive=True, relpath=False, basename=False):
+    # type: (str, Union[str, re.Pattern], Optional[List[str]], Optional[List[str]], Optional[List[str]], bool, bool, bool) -> Generator[str, None, None]
+    regex = regex if isinstance(regex, re.Pattern) else re.compile(regex)
+    for pth in walk(root_dirpath, extensions=extensions, ignore=ignore, include=include, case_insensitive=case_insensitive, relpath=relpath, basename=basename):
+        if regex.search(pth):
+            yield pth
 
 
 def drives():
