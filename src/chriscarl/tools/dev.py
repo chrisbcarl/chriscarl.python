@@ -287,31 +287,31 @@ class Audit(Mode):
             help='which func do you want? run "{} {} {} -h" to get help on the {!r} func'.format(SCRIPT_NAME, cls.__name__.lower(), example_audit_func, example_audit_func)
         )
 
-        manifest = funcs.add_parser('manifest', usage=pydoc.render_doc(dev.audit_manifest))
+        manifest = funcs.add_parser('manifest', usage=pydoc.render_doc(dev.audit_manifest), formatter_class=ArgparseNiceFormat)
         manifest.set_defaults(func=dev.audit_manifest)
         Audit.add_common_arguments(manifest)
 
-        relpath = funcs.add_parser('relpath', usage=pydoc.render_doc(dev.audit_relpath))
+        relpath = funcs.add_parser('relpath', usage=pydoc.render_doc(dev.audit_relpath), formatter_class=ArgparseNiceFormat)
         relpath.set_defaults(func=dev.audit_relpath)
         Audit.add_common_arguments(relpath)
 
-        tdd = funcs.add_parser('tdd', usage=pydoc.render_doc(dev.audit_tdd))
+        tdd = funcs.add_parser('tdd', usage=pydoc.render_doc(dev.audit_tdd), formatter_class=ArgparseNiceFormat)
         tdd.set_defaults(func=dev.audit_tdd)
         Audit.add_common_arguments(tdd)
 
-        banned = funcs.add_parser('banned', usage=pydoc.render_doc(dev.audit_banned))
+        banned = funcs.add_parser('banned', usage=pydoc.render_doc(dev.audit_banned), formatter_class=ArgparseNiceFormat)
         banned.set_defaults(func=dev.audit_banned)
         Audit.add_common_arguments(banned)
 
-        stubs = funcs.add_parser('stubs', usage=pydoc.render_doc(dev.audit_stubs))
+        stubs = funcs.add_parser('stubs', usage=pydoc.render_doc(dev.audit_stubs), formatter_class=ArgparseNiceFormat)
         stubs.set_defaults(func=dev.audit_stubs)
         Audit.add_common_arguments(stubs)
 
-        clean = funcs.add_parser('clean', usage=pydoc.render_doc(dev.audit_clean))
+        clean = funcs.add_parser('clean', usage=pydoc.render_doc(dev.audit_clean), formatter_class=ArgparseNiceFormat)
         clean.set_defaults(func=dev.audit_clean)
         Audit.add_common_arguments(clean)
 
-        cov = funcs.add_parser('cov', usage=pydoc.render_doc(dev.audit_cov))
+        cov = funcs.add_parser('cov', usage=pydoc.render_doc(dev.audit_cov), formatter_class=ArgparseNiceFormat)
         cov.set_defaults(func=dev.audit_cov)
         Audit.add_common_arguments(cov)
 

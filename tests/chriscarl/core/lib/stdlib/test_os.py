@@ -97,6 +97,7 @@ class TestCase(UnitTest):
             (lib.walk, (self.tempdir, ), dict(extensions=['.txt'])),
             (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=None)),
             (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=['src/', 'tests/'])),
+            (lib.walk_regex, (SCRIPT_DIRPATH, r'^test_.+\.py$'), dict(basename=True)),
         ]
         controls = [
             self.relpaths,
@@ -104,6 +105,7 @@ class TestCase(UnitTest):
             abspaths,
             include,
             ignore,
+            [file for file in os.listdir(SCRIPT_DIRPATH) if file.endswith('.py')],
         ]
         self.assert_null_hypothesis(variables, controls)
 

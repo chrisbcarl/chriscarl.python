@@ -25,6 +25,7 @@ import unittest
 from chriscarl.core import constants
 from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
+from chriscarl.core.lib.stdlib.io import write_text_file
 
 # test imports
 import chriscarl.core.functors.parse.markdown as lib
@@ -60,10 +61,16 @@ class TestCase(UnitTest):
 ||world|
 '''
         variables = [
-            (lib.table_to_rows, (table,), dict(null=True)),
+            (lib.table_to_rows, (table, ), dict(null=True)),
         ]
         controls = [
-            [{'a': 'hello', 'b': None}, {'a': None, 'b': 'world'}],
+            [{
+                'a': 'hello',
+                'b': None
+            }, {
+                'a': None,
+                'b': 'world'
+            }],
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -78,7 +85,7 @@ class TestCase(UnitTest):
 |hel|world|'''
 
         variables = [
-            (lib.table_prettify, (table_bad,)),
+            (lib.table_prettify, (table_bad, )),
         ]
         controls = [
             table_pretty,
@@ -94,12 +101,26 @@ class TestCase(UnitTest):
 |a  |b  |<ul><li>a</li><li>b</li></ul>|'''
 
         variables = [
-            (lib.table_listified, (table_bad,)),
+            (lib.table_listified, (table_bad, )),
         ]
         controls = [
             table_pretty,
         ]
         self.assert_null_hypothesis(variables, controls)
+
+    def test_case_3(self):
+        md = '''![img](https://upload.wikimedia.org/wikipedia/commons/3/36/Chiesa_di_Santa_Maria_della_Pace_altare_Presentazione_al_tempio_Batoni_Brescia.jpg)
+![img-local-doesnt-exist](./img.img)
+'''
+
+        md_filepath = abspath(self.tempdir, 'md.md')
+        write_text_file(md_filepath, md)
+        doclets, interdoc_labels, download_url_filepaths, errors, warnings = lib.markdown_to_doclets(md_filepath)
+        print(doclets)
+        print(interdoc_labels)
+        print(download_url_filepaths)
+        print(errors)
+        print(warnings)
 
 
 if __name__ == '__main__':
@@ -110,5 +131,6 @@ if __name__ == '__main__':
         tc.test_case_0()
         tc.test_case_1()
         tc.test_case_2()
+        tc.test_case_3()
     finally:
         tc.tearDown()

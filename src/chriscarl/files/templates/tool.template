@@ -53,10 +53,12 @@ class Arguments:
     '''
     Document this class with any specifics for the process function.
     '''
+    # app
     n: int
-    debug: bool
     times: int
     init: List[int] = field(default_factory=lambda: DEFAULT_FIB_INIT)
+    # misc
+    debug: bool = False
     output_dirpath: str = DEFAULT_OUTPUT_DIRPATH
     messages: List[str] = field(default_factory=lambda: [])
     log_level: str = 'INFO'
@@ -95,7 +97,7 @@ class Arguments:
         return arguments
 
     def to_dict(self):
-        return {fie.name: getattr(self, fie.name) for fie in fields(self)}
+        return {{fie.name: getattr(self, fie.name) for fie in fields(self)}}  # escaped for template reasons
 
 
 def fast_fib(n, debug=False, a=0, b=1):
@@ -120,7 +122,7 @@ def fast_fib(n, debug=False, a=0, b=1):
 
 def main():
     # type: () -> int
-    parser = cls.argparser()
+    parser = Arguments.argparser()
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
