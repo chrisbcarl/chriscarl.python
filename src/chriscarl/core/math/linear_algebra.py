@@ -12,6 +12,7 @@ lots of credit goes to 3Blue1Brown for the "Essence of linear algebra" series
     https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab
 
 Updates:
+    2026-02-22 - core.math.linear_algebra - added vectors_to_matrix, confirmed is_multipliable, added matrix_multiply
     2026-02-18 - core.math.linear_algebra - initial commit
 '''
 
@@ -22,7 +23,7 @@ import sys
 import logging
 import functools
 import re
-from typing import List, Union, Generator
+from typing import List, Union, Generator, Any
 
 # third party imports
 
@@ -41,7 +42,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 NUMBER_REGEX = re.compile(r'(?P<sign>-)?(?P<whole>\d+)\.?(?P<fraction>\d+)?')
-T_MATRIX = List[List[Union[int, float]]]
+T_MATRIX = List[List[Union[int, float, Any]]]
 
 
 def to_matrix(text):
@@ -134,14 +135,16 @@ def scalar_multiply(s, A, inplace=False):
     Return:
         T_MATRIX
     '''
-    isinstance_raise(s, (int, float))
     if not is_matrix(A):
-        raise ValueError('A is not a matrix!')
+        raise TypeError('A is not a matrix!')
     if not inplace:
         A = [row[:] for row in A]
     for r, row in enumerate(A):
         for c, cell in enumerate(row):
-            A[r][c] = s * cell
+            if isinstance(s, (int, float)):
+                A[r][c] = s * cell
+            else:
+                A[r][c] = f'{s}*{cell}'
     return A
 
 
@@ -158,14 +161,46 @@ def matrix_to_vectors(A):
         T_MATRIX
     '''
     if not is_matrix(A):
-        raise ValueError('A is not a matrix!')
+        raise TypeError('A is not a matrix!')
     cols = len(A[0])
     for c in range(cols):
         yield [[row[c]] for row in A]
 
 
+def vectors_to_matrix(vecs):
+    # type: (List[T_MATRIX]) -> T_MATRIX
+    '''
+    Description:
+        [[1] [2] [3]] + [[1] [2] [3]] = [
+            [2],
+            [4],
+            [6],
+        ]
+    Arguments:
+        A: List[T_MATRIX]
+            the list of vectors to matricize
+    Return:
+        T_MATRIX
+    '''
+    isinstance_raise(vecs, List[T_MATRIX])
+    A = [[row[0]] for row in vecs[0]]  # copy of 1st vector
+    if len(vecs[0]) == 1:
+        return A  # already done...
+    if not is_matrix(A):
+        raise TypeError('A is not a matrix!')
+    for col in range(1, len(vecs)):
+        vec = vecs[col]
+        for r, row in enumerate(vec):
+            A[r].append(row[0])
+    return A
+
+
 def is_multipliable(A, B, raise_on_error=False):
     # type: (T_MATRIX, T_MATRIX, bool) -> bool
+    if not is_matrix(A):
+        raise TypeError('A is not a matrix!')
+    if not is_matrix(B):
+        raise TypeError('B is not a matrix!')
     rows_A, cols_A = len(A), len(A[0])  # 2x3
     rows_B, cols_B = len(B), len(B[0])  # 3x1
     truth = cols_A == rows_B
@@ -197,22 +232,34 @@ def vector_multiply(A, V):
         T_MATRIX
     '''
     if not is_matrix(A):
-        raise ValueError('A is not a matrix!')
+        raise TypeError('A is not a matrix!')
     if not is_vector(V):
         raise TypeError("V is not a column-wise vector!")
     is_multipliable(A, V, raise_on_error=True)
 
     scaled_A_vectors = [scalar_multiply(V[col][0], A_vec) for col, A_vec in enumerate(matrix_to_vectors(A))]
-    B = functools.reduce(lambda left, right: [[left[row][0] + right[row][0]] for row in range(len(left))], scaled_A_vectors)
-    # TODO: RESUME, so far vector multiply works in a 2x3 x 3x1, but it should apparently also work in a 3x4 x 3x1 according to numpy...
+    B = functools.reduce(
+        lambda left, right: [[left[row][0] + right[row][0]] if isinstance(left[row][0], (int, float)) else [f'{left[row][0]} + {right[row][0]}'] for row in range(len(left))],
+        scaled_A_vectors
+    )
     return B
 
 
 def matrix_multiply(A, B):
     # type: (T_MATRIX, T_MATRIX) -> T_MATRIX
+    r'''
+    Description:
+        Expressed as:
+            $A \times B$
+        Evaluated as:
+            B is the 1st transform, A is the 2nd transform, therefore:
+            for b_column_vector in B
+                new A_vec = A scaled by b_column_vector as new basis
+            return accumulated new vectors
     '''
-    '''
-    isinstance_raise(A, T_MATRIX)
-    isinstance_raise(B, T_MATRIX)
+    is_multipliable(A, B, raise_on_error=True)
     C = []
-    return C
+    for col, b_vec in enumerate(matrix_to_vectors(B)):
+        a_vec = vector_multiply(A, b_vec)
+        C.append(a_vec)
+    return vectors_to_matrix(C)
