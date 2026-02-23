@@ -68,6 +68,32 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1(self):
+        known0 = datetime.datetime(year=2026, month=2, day=20)
+        known1 = datetime.datetime(year=2026, month=2, day=20, hour=6)
+        known2 = datetime.datetime(year=2026, month=2, day=20, hour=6, microsecond=9)
+        known3 = datetime.datetime(year=2026, month=2, day=20, hour=6, microsecond=9, tzinfo=datetime.timezone.utc)
+        variables = [
+            (lib.from_str, 'nothing'),
+            (lib.from_str, '2026-02-20'),
+            (lib.from_str, '2026-02-20 6:00'),
+            (lib.from_str, '2026-02-20 06:00'),
+            (lib.from_str, '2026-02-20 06:00:00.000009'),
+            # TODO:
+            # (lib.from_str, '2026-02-20T6:00:00.000009'),
+            # (lib.from_str, '2026-02-20T6:00:00.000009 +0000'),
+        ]
+        controls = [
+            None,
+            known0,
+            known1,
+            known1,
+            known2,
+            # known3,
+            # known3,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -75,5 +101,6 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
     finally:
         tc.tearDown()

@@ -10,7 +10,11 @@ core.lib.stdlib.datetime is fast functions that are exactly what I want
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-02-22 - core.lib.stdlib.datetime - FIX: jesus christ its good we're testing this... added from_str
     2026-02-20 - core.lib.stdlib.datetime - initial commit
+
+TODO:
+    - timezone info, utc, etc.
 '''
 
 # stdlib imports
@@ -49,7 +53,7 @@ def get_start_of_week(now=NOW):
     Returns:
         datetime.datetime
     '''
-    daynumber = NOW.weekday()
+    daynumber = now.weekday()
     start_of_week = now - datetime.timedelta(days=daynumber)
     return start_of_week
 
@@ -78,3 +82,32 @@ def get_end_of_day(now):
         datetime.datetime
     '''
     return datetime.datetime(year=now.year, month=now.month, day=now.day, hour=23, minute=59, second=59, microsecond=999999)
+
+
+DATETIME_FORMATS = [
+    '%Y-%m-%d',
+    '%Y-%m-%d %H:%M:%S',
+    '%Y-%m-%d %H:%M:%S.%f',
+    '%Y-%m-%d %H:%M',
+]
+# TODO: timezone info, utc, etc.
+DATETIME_TZ_FORMATS = [
+    # '%Y-%m-%dT%H:%M',
+    # '%Y-%m-%dT%H:%M:%S',
+    # '%Y-%m-%dT%H:%M:%S %z',
+    # '%Y-%m-%d %H:%M:%S %z',
+    # '%Y-%m-%dT%H:%M:%S.%f',
+    # '%Y-%m-%dT%H:%M:%S.%f %z',
+    # '%Y-%m-%d %H:%M:%S.%f %z',
+]
+
+
+def from_str(text):
+    # type: (str) -> datetime.datetime|None
+    for fmt in DATETIME_FORMATS + DATETIME_TZ_FORMATS:
+        try:
+            return datetime.datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+
+    return None
