@@ -10,6 +10,7 @@ core.lib.stdlib.json is all about making sure I dont have to write indent=4 or c
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-02-23 - core.lib.stdlib.json - added ReadWriteJson
     2024-11-24 - core.lib.stdlib.json - initial commit
 '''
 
@@ -19,12 +20,14 @@ import os
 import sys
 import json
 import logging
-from typing import Dict
+from typing import Dict, Any
+import dataclasses
 
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.os import make_file_dirpath
+from chriscarl.core.lib.stdlib.os import make_file_dirpath, is_file
+from chriscarl.core.lib.stdlib.io import ReadWriteText
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/json.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -56,10 +59,10 @@ def read_json_list(filepath, encoding='utf-8'):
         raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
 
 
-def write_json(filepath, content, encoding='utf-8', indent=4):
-    # type: (str, dict, str, int) -> None
+def write_json(filepath, content, encoding='utf-8', indent=4, newline='\n'):
+    # type: (str, dict, str, int, str) -> None
     make_file_dirpath(filepath)
-    with open(filepath, 'w', encoding=encoding) as w:
+    with open(filepath, 'w', encoding=encoding, newline=newline) as w:
         json.dump(content, w, indent=indent)
 
 
@@ -68,3 +71,25 @@ def dict_to_string(obj, indent=2):
 
 
 json_to_string = dict_to_string
+
+
+@dataclasses.dataclass
+class ReadWriteJson(ReadWriteText):
+    body: Dict[Any, Any] = dataclasses.field(default_factory=lambda: {})
+
+    def __init__(self, filepath='', encoding='utf-8', newline='\n'):
+        # type: (str, str, str) -> None
+        super().__init__(filepath, encoding=encoding, newline=newline)
+        self.body = {}
+
+    def __enter__(self):
+        LOGGER.debug('reading "%s"', self.filepath)
+        if not is_file(self.filepath):
+            self.content = {}
+        else:
+            self.content = read_json(self.filepath, encoding=self.encoding)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        LOGGER.debug('writing "%s"', self.filepath)
+        write_json(self.filepath, self.body, encoding=self.encoding, newline=self.newline)

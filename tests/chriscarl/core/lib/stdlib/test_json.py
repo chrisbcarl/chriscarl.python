@@ -42,6 +42,7 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
+        super().setUp()
         self.dict = {
             'str': 'str',
             'int': 1,
@@ -52,18 +53,24 @@ class TestCase(UnitTest):
                 'key': 'value'
             },
         }
-        return super().setUp()
 
     def tearDown(self):
-        return super().tearDown()
+        super().tearDown()
 
     def test_case_0_write_read(self):
+        os.remove(self.tempfile)  # NOTE: at this point, self.tempfile is empty, so it would badly, might as well remove
+        with lib.ReadWriteJson(self.tempfile) as rwj:
+            rwj.body = {'a': True}
         variables = [
+            (lib.read_json, (self.tempfile)),
             (lib.write_json, (self.tempfile, self.dict)),
             (lib.read_json, (self.tempfile)),
             (lib.read_json_list, (self.tempfile)),  # non list and list are the same, its just a type hint
         ]
         controls = [
+            {
+                'a': True
+            },
             None,
             self.dict,
             self.dict,
@@ -92,7 +99,8 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_write_read()
-    tc.test_case_1_dict_to_string()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0_write_read()
+        tc.test_case_1_dict_to_string()
+    finally:
+        tc.tearDown()
