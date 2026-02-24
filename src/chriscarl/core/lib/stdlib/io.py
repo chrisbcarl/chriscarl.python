@@ -10,6 +10,7 @@ core.lib.stdlib.io is all about basic input/output operations
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-02-23 - core.lib.stdlib.io - added ReadWriteText
     2026-01-17 - core.lib.stdlib.io - BUG: fixed write_text_file to always use LF by default
     2026-01-07 - core.lib.stdlib.io - added read_text_file_try
     2024-11-24 - core.lib.stdlib.io - initial commit
@@ -22,11 +23,12 @@ import sys
 import logging
 import locale
 from typing import List
+import dataclasses
 
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.os import make_file_dirpath
+from chriscarl.core.lib.stdlib.os import make_file_dirpath, is_file
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/io.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -84,3 +86,35 @@ def write_bytes_file(filepath, content):
     make_file_dirpath(filepath)
     with open(filepath, 'wb') as wb:
         return wb.write(content)
+
+
+@dataclasses.dataclass
+class ReadWriteText(object):
+    '''
+    Description:
+        Nice context manager that allows you to get in and out, reading and writing in the context.
+    Example:
+        >>> with ReadWriteText('/tmp/tmp.txt') as rwt:
+        >>>     rwt.text = 'hello world'
+    '''
+    filepath: str = ''
+    text: str = ''
+    encoding: str = 'utf-8'
+    newline: str = '\n'
+
+    def __init__(self, filepath='', encoding='utf-8', newline='\n'):
+        # type: (str, str, str) -> None
+        self.filepath, self.encoding, self.newline = filepath, encoding, newline
+        self.text = ''
+
+    def __enter__(self):
+        LOGGER.debug('reading "%s"', self.filepath)
+        if not is_file(self.filepath):
+            self.text = ''
+        else:
+            self.text = read_text_file(self.filepath, encoding=self.encoding)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        LOGGER.debug('writing "%s"', self.filepath)
+        write_text_file(self.filepath, self.text, encoding=self.encoding, newline=self.newline)

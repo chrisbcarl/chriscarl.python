@@ -46,10 +46,12 @@ constants.fix_constants(lib)  # deal with namespace sharding the files across di
 class TestCase(UnitTest):
 
     def setUp(self):
-        return super().setUp()
+        super().setUp()
+        # do other set ups (set up super first)
 
     def tearDown(self):
-        return super().tearDown()
+        # do other tear downs (tear down super after)
+        super().tearDown()
 
     @unittest.skip('lorem ipsum')
     def test_case_0(self):

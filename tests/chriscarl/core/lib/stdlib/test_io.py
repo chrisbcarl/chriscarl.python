@@ -44,10 +44,12 @@ LOGGER.addHandler(logging.NullHandler())
 class TestCase(UnitTest):
 
     def setUp(self):
+        super().setUp()
         self.utf8 = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'utf-8')
         self.utf16le = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'utf-16-le')
         self.cp1252 = abspath(constants.TESTS_COLLATERAL_DIRPATH, 'cp1252-DO-NOT-EDIT-ME')
-        return super().setUp()
+        self.text_file = abspath(self.tempdir, 'text.txt')
+        self.bin_file = abspath(self.tempdir, 'binary.bin')
 
     def tearDown(self):
         return super().tearDown()
@@ -76,12 +78,40 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_2(self):
+        content = b'hello world'
+        variables = [
+            (lib.write_text_file, (self.text_file, content.decode('utf-8'))),
+            (lib.write_bytes_file, (self.bin_file, content)),
+        ]
+        controls = [
+            len(content),
+            len(content),
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_3(self):
+        rwt_filepath = abspath(self.tempdir, 'rwt')
+        with lib.ReadWriteText(rwt_filepath) as rwt:
+            rwt.text = 'hello world'
+
+        variables = [
+            (lib.read_text_file, rwt_filepath),
+        ]
+        controls = [
+            'hello world',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0_unicode_throw()
-    tc.test_case_1_no_unicode_throw()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0_unicode_throw()
+        tc.test_case_1_no_unicode_throw()
+        tc.test_case_2()
+        tc.test_case_3()
+    finally:
+        tc.tearDown()
