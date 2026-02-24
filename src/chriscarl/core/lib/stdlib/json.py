@@ -85,9 +85,9 @@ class ReadWriteJson(ReadWriteText):
     def __enter__(self):
         LOGGER.debug('reading "%s"', self.filepath)
         if not is_file(self.filepath):
-            self.content = {}
+            self.body = {}
         else:
-            self.content = read_json(self.filepath, encoding=self.encoding)
+            self.body = read_json(self.filepath, encoding=self.encoding)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
