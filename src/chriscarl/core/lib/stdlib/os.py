@@ -208,11 +208,9 @@ def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload']):
     while files_now == files_then and time.time() - then < timeout:
         files_now = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
         for file, mtime in files_now.items():
+            if file not in files_then:
+                return abspath(dirpath, file)
             if mtime > files_then[file]:
                 return abspath(dirpath, file)
         time.sleep(0.1)
-    diff = list(set(files_now).difference(set(files_then)))
-    if not diff:
-        raise TimeoutError(f'timeout of {timeout}sec waiting for a new file in "{dirpath}"')
-
-    return abspath(dirpath, diff[0])
+    raise TimeoutError(f'timeout of {timeout}sec waiting for a new file in "{dirpath}"')
