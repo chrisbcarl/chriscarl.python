@@ -183,11 +183,18 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_8(self):
+        listdir_mtime_prev = lib.listdir_mtime(self.tempdir)
+        content = 'mhm'
+        content_filepath = os.path.join(self.tempdir, content)
         variables = [
             (lib.wait_for_new_file, (self.tempdir, ), dict(timeout=0.2)),
+            (write_text_file, (content_filepath, content)),
+            (lib.wait_for_new_file, (self.tempdir, ), dict(timeout=1, listdir_mtime_prev=listdir_mtime_prev)),
         ]
         controls = [
             TimeoutError,
+            len(content),
+            content_filepath,
         ]
         self.assert_null_hypothesis(variables, controls)
 

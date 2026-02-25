@@ -10,7 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
-    2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place
+    2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place, added listdir_mtime
     2026-02-20 - core.lib.stdlib.os - added walk_regex
     2026-01-30 - core.lib.stdlib.os - added wait_for_new_file, listdir
     2026-01-25 - core.lib.stdlib.os - added filename
@@ -28,7 +28,7 @@ import sys
 import re
 import string
 import logging
-from typing import Generator, Optional, List, Union
+from typing import Generator, Optional, List, Union, Dict
 import time
 
 # third party imports
@@ -199,14 +199,19 @@ def listdir(dirpath, bad_exts=['.crdownload']):
     return [os.path.join(dirpath, basename) for basename in basenames]
 
 
-def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload']):
-    # type: (str, int|float, List[str]) -> str
+def listdir_mtime(dirpath, bad_exts=['.crdownload']):
+    # type: (str, List[str]) -> Dict[str, float]
+    return {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
+
+
+def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload'], listdir_mtime_prev=None):
+    # type: (str, int|float, List[str], Optional[Dict[str, float]]) -> str
     dirpath = abspath(dirpath)
     then = time.time()
-    files_then = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
-    files_now = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
-    while files_now == files_then and time.time() - then < timeout:
-        files_now = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
+    files_then = listdir_mtime_prev or listdir_mtime(dirpath, bad_exts=bad_exts)
+    files_now = listdir_mtime(dirpath, bad_exts=bad_exts)
+    while (time.time() - then) < timeout:
+        files_now = listdir_mtime(dirpath, bad_exts=bad_exts)
         for file, mtime in files_now.items():
             if file not in files_then:
                 return abspath(dirpath, file)
