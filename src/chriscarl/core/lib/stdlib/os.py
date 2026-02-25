@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place
     2026-02-20 - core.lib.stdlib.os - added walk_regex
     2026-01-30 - core.lib.stdlib.os - added wait_for_new_file, listdir
     2026-01-25 - core.lib.stdlib.os - added filename
@@ -202,12 +203,15 @@ def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload']):
     # type: (str, int|float, List[str]) -> str
     dirpath = abspath(dirpath)
     then = time.time()
-    files_then = set(listdir(dirpath, bad_exts=bad_exts))
-    files_now = set(listdir(dirpath, bad_exts=bad_exts))
+    files_then = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
+    files_now = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
     while files_now == files_then and time.time() - then < timeout:
-        files_now = set(listdir(dirpath, bad_exts=bad_exts))
+        files_now = {filepath: os.path.getmtime(filepath) for filepath in listdir(dirpath, bad_exts=bad_exts)}
+        for file, mtime in files_now.items():
+            if mtime > files_then[file]:
+                return abspath(dirpath, file)
         time.sleep(0.1)
-    diff = list(files_now.difference(files_then))
+    diff = list(set(files_now).difference(set(files_then)))
     if not diff:
         raise TimeoutError(f'timeout of {timeout}sec waiting for a new file in "{dirpath}"')
 
