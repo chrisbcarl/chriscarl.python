@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-26 - core.functors.parse.markdown - if an svg it prints lineno
     2026-02-20 - core.functors.parse.markdown - moved analyze_extract_sections, sections_to_doclets from tool, brought them here.
     2026-02-01 - core.functors.parse.markdown - added table_to_list, table_to_rows
     2026-01-29 - core.functors.parse.markdown - added table_listified
@@ -485,7 +486,8 @@ def sections_to_doclets(sections, md_filepath, output_dirpath=constants.TEMP_DIR
 
                     path, ext = os.path.splitext(path)  # doesnt like extensions???
                     if ext.lower() in ['.svg']:
-                        raise RuntimeError(f'image src at "{path}" is using a forbidden extension, cannot proceed')
+                        lineno = list(find_lineno_index(path, original_md_content))[0][0] + 1
+                        raise RuntimeError(f'image src at "{path}" is using a forbidden extension "{ext}" at "{md_filepath}", lineno {lineno}, cannot proceed')
                 elif section_sub == 'literal-inline':
                     pass
                 elif section_sub == 'latex-inline':
