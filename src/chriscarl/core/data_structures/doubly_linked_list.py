@@ -24,7 +24,7 @@ from typing import Optional, Any, Generator, Tuple, List
 
 # project imports
 from chriscarl.core.data_structures.node import Node
-from chriscarl.core.data_structures.singly_linked_list import SllNode
+from chriscarl.core.data_structures.singly_linked_list import SllNode, SinglyLinkedList, count, to_list
 
 SCRIPT_RELPATH = 'chriscarl/core/data_structures/doubly_linked_list.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -54,3 +54,42 @@ class DllNode(SllNode):
     def prev(self, value):
         # type: (DllNode|Any) -> None
         self.neighbors[1] = self.new(value)
+
+
+class DoublyLinkedList(SinglyLinkedList):
+    head = DllNode(0)  # type: DllNode
+    size = 0
+
+    def __init__(self, node_or_data):
+        if isinstance(node_or_data, DllNode):
+            self.head = node_or_data
+        else:
+            self.head = DllNode(node_or_data)
+        self.size = count(self.head)
+
+    def to_list(self):
+        # type: () -> List[Any]
+        return to_list(self.head)
+
+    @classmethod
+    def from_list(cls, lst):
+        # type: (List[Any]) -> SinglyLinkedList
+        head = from_list(lst)
+        return SinglyLinkedList(head)
+
+    def append_tail(self, value):
+        # type: (SllNode|Any) -> None
+        append(self.head, value)
+        self.size = count(self.head)
+
+
+def from_list(lst):
+    # type: (List[Any]) -> Optional[SllNode]
+    if not lst:
+        return None
+    ptr = head = SllNode(lst[0])
+    for i in range(1, len(lst)):
+        n = SllNode(lst[i])
+        ptr.next = n
+        ptr = n
+    return head

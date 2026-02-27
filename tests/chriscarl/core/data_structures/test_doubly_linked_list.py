@@ -51,15 +51,27 @@ class TestCase(UnitTest):
     def tearDown(self):
         return super().tearDown()
 
-    @unittest.skip('lorem ipsum')
+    # @unittest.skip('lorem ipsum')
     def test_case_0(self):
+        lst = list(range(5))
+        sll = lib.DoublyLinkedList.from_list(lst)
+        sll2 = lib.DoublyLinkedList.from_list(lst)
+        sll3 = lib.DoublyLinkedList(5)
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
+            (sll.to_list),
+            (str, sll),
+            (lib.count, sll.head),
+            (len, sll),
+            (sll.__eq__, sll2),
+            (sll.__ne__, sll3),
         ]
         controls = [
-            6,
-            6,
+            lst,
+            '0 <-> 1 <-> 2 <-> 3 <-> 4',
+            5,
+            5,
+            True,
+            True,
         ]
         self.assert_null_hypothesis(variables, controls)
 

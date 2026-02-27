@@ -10,12 +10,8 @@ core.data_structures.singly_linked_list is a somewhat overkill class that gets t
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-02-26 - core.data_structures.singly_linked_list - finally added all the modification funcs
     2026-02-15 - core.data_structures.singly_linked_list - initial commit
-
-# TODO:
-remove
-insert
-index
 '''
 
 # stdlib imports
@@ -57,7 +53,10 @@ class SllNode(Node):
     @next.setter
     def next(self, value):
         # type: (SllNode|Any) -> None
-        self.neighbors[0] = value if isinstance(value, SllNode) else SllNode(value)
+        if value is not None:
+            self.neighbors[0] = value if isinstance(value, SllNode) else SllNode(value)
+        else:
+            self.neighbors[0] = None
 
 
 class SinglyLinkedList():
@@ -102,9 +101,37 @@ class SinglyLinkedList():
         return SinglyLinkedList(head)
 
     def append(self, value):
-        # type: (SllNode|Any) -> None
-        append(self.head, value)
+        # type: (SllNode|Any) -> SllNode
+        new = append(self.head, value)
         self.size = count(self.head)
+        return new
+
+    def insert(self, idx, value):
+        # type: (int, Any) -> SllNode
+        new = insert(self.head, idx, value)
+        if idx == 0:
+            self.head = new
+        self.size = count(self.head)
+        return new
+
+    def emplace(self, idx, value):
+        # type: (int, Any) -> SllNode
+        new = emplace(self.head, idx, value)
+        if idx == 0:
+            self.head = new
+        return new
+
+    def remove(self, idx):
+        # type: (int) -> None
+        remove(self.head, idx)
+        if idx == 0:
+            self.head = self.head.next
+        self.size = count(self.head)
+
+    @property
+    def tail(self):
+        # type: () -> SllNode
+        return tail(self.head)
 
 
 def to_list(head):
@@ -140,11 +167,13 @@ def count(head):
 
 
 def append(head, value):
-    # type: (SllNode, SllNode|Any) -> None
+    # type: (SllNode, SllNode|Any) -> SllNode
+    new = value if isinstance(value, SllNode) else SllNode(value)
     ptr = head
     while ptr.next:
         ptr = ptr.next
-    ptr.next = value if isinstance(value, SllNode) else SllNode(value)
+    ptr.next = new
+    return new
 
 
 def to_str(head):
@@ -153,3 +182,84 @@ def to_str(head):
         return ''
     tokens = to_list(head)
     return ' -> '.join(str(token) for token in tokens)
+
+
+def index_and_prev(head, idx):
+    # type: (SllNode|None, int) -> Tuple[SllNode|None, SllNode|None]
+    if idx < 0:
+        raise IndexError(f'idx {idx} does not exist')
+    prev = None  # type: SllNode|None
+    while idx > 0:
+        if head is None:
+            raise IndexError(f'idx {idx} does not exist')
+
+        prev = head
+        head = head.next
+        idx -= 1
+    return head, prev
+
+
+def index(head, idx):
+    # type: (SllNode|None, int) -> SllNode|None
+    head, _ = index_and_prev(head, idx)
+    return head
+
+
+def emplace(head, idx, value):
+    # type: (SllNode|None, int, Any) -> SllNode
+    head, prev = index_and_prev(head, idx)
+
+    # head is at index, 3 cases:
+    new = SllNode(value)
+    if not head:  # we're at the end of the list, so this is just append
+        prev.next = new
+    else:
+        if prev is None:  # beginning of list
+            new.next = head.next  # old head still attached
+        else:  # middle of the list
+            new.next = head.next  # old middle still attached
+            prev.next = new
+    return new
+
+
+def insert(head, idx, value):
+    # type: (SllNode|None, int, Any) -> SllNode
+    '''4, 5, 6 insert(4, 1, 1) -> 4156 insert: "insert at"'''
+    head, prev = index_and_prev(head, idx)
+
+    # head is at index, 3 cases:
+    new = SllNode(value)
+    if head is None:  # we're at the end of the list, so this is just append
+        prev.next = new
+    else:
+        if prev is None:  # beginning of list
+            new.next = head
+        else:  # middle of the list
+            prev.next = new
+            new.next = head
+    return new
+
+
+def remove(head, idx):
+    # type: (SllNode|None, int) -> SllNode
+    '''0,1,2.remove(1) = 0,2
+    NOTE: does NOT remove links from the popped node
+    '''
+    head, prev = index_and_prev(head, idx)
+
+    # head is at index, 3 cases:
+    if not head:  # end of list, this is an error, nothing to pop
+        raise IndexError(f'idx {idx} does not exist')
+    else:
+        if prev is None:  # start of list, telling to pop the head...
+            return head
+        else:  # middle of list, need to reassign ptrs
+            prev.next = head.next
+            return head
+
+
+def tail(head):
+    # type: (SllNode) -> SllNode
+    while head.next is not None:
+        head = head.next
+    return head

@@ -126,7 +126,10 @@ class UnitTest(unittest.TestCase):
                     except KeyboardInterrupt:
                         sys.exit(2)  # SIGINT-ish
 
-                if inspect.isclass(control) and issubclass(control, Exception):
+                if control is Any:
+                    func(*args, **kwargs)
+                    LOGGER.info('{} PASS w/ expected {}'.format(status, control), stacklevel=2)
+                elif inspect.isclass(control) and issubclass(control, Exception):
                     exe = None
                     try:
                         experiment = func(*args, **kwargs)

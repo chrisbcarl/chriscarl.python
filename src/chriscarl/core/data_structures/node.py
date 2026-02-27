@@ -18,7 +18,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-from typing import Any
+from typing import Any, List, Optional
 
 # third party imports
 
@@ -37,7 +37,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 class Node(object):
-    neighbors = []  # type: list
+    neighbors = []  # type: List[Optional[Node]]
     data = None  # type: Any
 
     def __init__(self, data):

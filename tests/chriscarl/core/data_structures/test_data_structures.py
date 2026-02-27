@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         {author}
-Email:          {email}
-Date:           {date}
+Author:         Chris Carl
+Email:          chrisbcarl@outlook.com
+Date:           2026-02-15
 Description:
 
-{module_dot_path} unit test.
+chriscarl.core.data_structures unit test.
 
 Updates:
-    {date} - {test_module_dot_path} - initial commit
+    2026-02-15 - tests.chriscarl.core.data_structures - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -18,7 +18,6 @@ import os
 import sys
 import logging
 import unittest
-from typing import Any
 
 # third party imports
 
@@ -28,9 +27,9 @@ from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import {module_dot_path} as lib
+import chriscarl.core.data_structures as lib
 
-SCRIPT_RELPATH = '{script_relpath}'
+SCRIPT_RELPATH = 'tests/chriscarl/core/test_data_structures.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -47,24 +46,20 @@ constants.fix_constants(lib)  # deal with namespace sharding the files across di
 class TestCase(UnitTest):
 
     def setUp(self):
-        super().setUp()
-        # do other set ups (set up super first)
+        return super().setUp()
 
     def tearDown(self):
-        # do other tear downs (tear down super after)
-        super().tearDown()
+        return super().tearDown()
 
     @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
             (sum, [0, 1, 2, 3]),
             (sum, [0, 1, 2, 3]),
-            (print, "dont care"),
         ]
         controls = [
             6,
             6,
-            Any,
         ]
         self.assert_null_hypothesis(variables, controls)
 
