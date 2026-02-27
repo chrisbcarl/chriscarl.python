@@ -124,6 +124,9 @@ class TestCase(UnitTest):
         sll = lib.SinglyLinkedList.from_list(list(range(4)))
         tail = sll.append(4)
         variables = [
+            (sll.at, (-1, )),
+            (sll.at, (10, )),
+            (sll.at, (0, )),
             (getattr, (sll, 'tail')),
             (sll.__str__, ()),
             (sll.remove, (-1, )),
@@ -136,6 +139,9 @@ class TestCase(UnitTest):
             (sll.__str__, ()),
         ]
         controls = [
+            IndexError,
+            IndexError,
+            0,
             tail,
             '0 -> 1 -> 2 -> 3 -> 4',
             IndexError,

@@ -39,7 +39,6 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 class SllNode(Node):
-    neighbors = []  # type: List[Optional[SllNode]]
 
     def __init__(self, data, next=None):
         super().__init__(data)
@@ -89,6 +88,14 @@ class SinglyLinkedList():
                 ptr_oth = ptr_oth.next
             return True
         return False
+
+    def at(self, idx):
+        # type: (int) -> Any
+        return index(self.head, idx)
+
+    def __getitem__(self, key):
+        # type: (int) -> Any
+        return self.at(key)
 
     def to_list(self):
         # type: () -> List[Any]

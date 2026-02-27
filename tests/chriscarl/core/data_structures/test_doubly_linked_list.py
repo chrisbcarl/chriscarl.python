@@ -18,6 +18,7 @@ import os
 import sys
 import logging
 import unittest
+from typing import Any
 
 # third party imports
 
@@ -75,6 +76,85 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_1(self):
+        sll = lib.DoublyLinkedList.from_list(list(range(3)))
+        variables = [
+            (sll.__str__, ()),
+            (sll.insert, (-1, -1)),
+            (sll.insert, (10, 10)),
+            (sll.insert, (0, 999)),
+            (sll.__str__, ()),
+            (sll.insert, (4, 4)),
+            (sll.__str__, ()),
+            (sll.insert, (2, 222)),
+            (sll.__str__, ()),
+            # end of inserts
+            (sll.emplace, (-1, -1)),
+            (sll.emplace, (10, -1)),
+            (sll.emplace, (0, -1)),
+            (sll.__str__, ()),
+            (sll.emplace, (5, 5)),
+            (sll.__str__, ()),
+            (sll.emplace, (2, 69)),
+            (sll.__str__, ()),
+        ]
+        controls = [
+            '0 <-> 1 <-> 2',
+            IndexError,
+            IndexError,
+            Any,
+            '999 <-> 0 <-> 1 <-> 2',
+            Any,
+            '999 <-> 0 <-> 1 <-> 2 <-> 4',
+            Any,
+            '999 <-> 0 <-> 222 <-> 1 <-> 2 <-> 4',
+            # end of inserts
+            IndexError,
+            IndexError,
+            Any,
+            '-1 <-> 0 <-> 222 <-> 1 <-> 2 <-> 4',
+            Any,
+            '-1 <-> 0 <-> 222 <-> 1 <-> 2 <-> 5',
+            Any,
+            '-1 <-> 0 <-> 69 <-> 1 <-> 2 <-> 5',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
+    def test_case_2(self):
+        sll = lib.DoublyLinkedList.from_list(list(range(4)))
+        tail = sll.append(4)
+        variables = [
+            (sll.at, (-1, )),
+            (sll.at, (10, )),
+            (sll.at, (0, )),
+            (getattr, (sll, 'tail')),
+            (sll.__str__, ()),
+            (sll.remove, (-1, )),
+            (sll.remove, (0, )),
+            (sll.__str__, ()),
+            (sll.remove, (2, )),
+            (sll.__str__, ()),
+            (sll.remove, (3, )),
+            (sll.remove, (2, )),
+            (sll.__str__, ()),
+        ]
+        controls = [
+            IndexError,
+            IndexError,
+            0,
+            tail,
+            '0 <-> 1 <-> 2 <-> 3 <-> 4',
+            IndexError,
+            Any,
+            '1 <-> 2 <-> 3 <-> 4',
+            Any,
+            '1 <-> 2 <-> 4',
+            IndexError,
+            Any,
+            '1 <-> 2',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -82,5 +162,7 @@ if __name__ == '__main__':
 
     try:
         tc.test_case_0()
+        tc.test_case_1()
+        tc.test_case_2()
     finally:
         tc.tearDown()

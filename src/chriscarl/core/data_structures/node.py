@@ -51,6 +51,8 @@ class Node(object):
         return f'{self.__class__.__name__}[{self.data}, {len([neighbor for neighbor in self.neighbors if neighbor])}E]'
 
     def __eq__(self, other):
+        if isinstance(other, type(self.data)):
+            return self.data == other
         if not isinstance(other, Node):
             return False
         return self.data == other.data

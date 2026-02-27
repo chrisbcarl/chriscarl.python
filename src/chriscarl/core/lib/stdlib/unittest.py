@@ -10,6 +10,7 @@ core.lib.stdlib.unittest includes stuff I want all unit tests to have access to
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-02-26 - core.lib.stdlib.unittest - added Any as a no-op variable
     2026-01-17 - core.lib.stdlib.unittest - added True as equivalent if the experiment is boolable
     2025-01-01 - core.lib.stdlib.unittest - FIX: stuff that yields generators now will have to answer for their exception crimes
     2024-12-09 - core.lib.stdlib.unittest - UnitTest now configures with my logging by default, so much nicer.

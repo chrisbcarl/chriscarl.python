@@ -68,6 +68,8 @@ class TestCase(UnitTest):
             (str, n0),
             (repr, n0),
             (repr, n2),
+            (n0.__eq__, 0),
+            (n0.__ne__, "0"),
         ]
         controls = [
             True,
@@ -77,6 +79,8 @@ class TestCase(UnitTest):
             'Node[0]',
             'Node[0, 3E]',
             'Node[1, 0E]',
+            True,
+            True,
         ]
         self.assert_null_hypothesis(variables, controls)
 
