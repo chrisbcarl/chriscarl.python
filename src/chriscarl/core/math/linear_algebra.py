@@ -11,7 +11,10 @@ core are modules that define the bedrock from which other things do import. non-
 lots of credit goes to 3Blue1Brown for the "Essence of linear algebra" series
     https://www.youtube.com/watch?v=fNk_zzaMoSs&list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab
 
+- https://www.ling.upenn.edu/courses/cogs501/LinearAlgebraReview.html
+
 Updates:
+    2026-02-27 - core.math.linear_algebra - added transpose, magnitude, vector_multiply, orthogonal, orthonormal, matrix_vector_multiply
     2026-02-22 - core.math.linear_algebra - added vectors_to_matrix, confirmed is_multipliable, added matrix_multiply
     2026-02-18 - core.math.linear_algebra - initial commit
 '''
@@ -21,9 +24,11 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
-import functools
-import re
 from typing import List, Union, Generator, Any
+import functools
+import itertools
+import math
+import re
 
 # third party imports
 
@@ -65,6 +70,26 @@ def to_matrix(text):
     return matrix
 
 
+def create(n, m, val=0):
+    # type: (int, int, int|float) -> T_MATRIX
+    A = [[val for _ in range(m)] for _ in range(n)]
+    return A
+
+
+def transpose(A):
+    # type: (T_MATRIX) -> T_MATRIX
+    if not is_matrix(A):
+        raise TypeError('A is not a matrix!')
+
+    n, m = len(A), len(A[0])
+    T = create(m, n)
+    for r in range(n):
+        for c in range(m):
+            # "swap rowas and collumns"
+            T[c][r] = A[r][c]  # literally turn your brain off, that easy
+    return T
+
+
 def is_vector(V):
     # type: (T_MATRIX) -> bool
     try:
@@ -75,6 +100,26 @@ def is_vector(V):
         if len(row) != 1:
             return False
     return True
+
+
+def magnitude(V):
+    # type: (T_MATRIX) -> float
+    '''length in the sense of euclidean distance from the origin'''
+    if not is_vector(V):
+        raise TypeError('V is not a vector!')
+    return math.sqrt(sum(row[0]**2 for row in V))
+
+
+def vector_multiply(V, W):
+    # type: (T_MATRIX, T_MATRIX) -> float
+    if not is_vector(V):
+        raise TypeError('V is not a vector!')
+    if not is_vector(W):
+        raise TypeError('W is not a vector!')
+    n = len(V)
+    if len(V) != len(W):
+        raise ValueError('vector multiplication requires same dimensions!')
+    return sum(V[r][0] * W[r][0] for r in range(n))
 
 
 def is_matrix(V):
@@ -167,6 +212,36 @@ def matrix_to_vectors(A):
         yield [[row[c]] for row in A]
 
 
+def orthogonal(A):
+    # type: (T_MATRIX) -> float
+    '''
+    - https://www.ling.upenn.edu/courses/cogs501/LinearAlgebraReview.html
+        orthogonal if the inner product of every (non-identical) pair is 0.
+
+    '''
+    if not is_matrix(A):
+        raise TypeError('A is not a matrix!')
+    vectors = list(matrix_to_vectors(A))
+    return all(vector_multiply(v0, v1) == 0 for v0, v1 in itertools.combinations(vectors, 2))
+
+
+def orthonormal(VA):
+    # type: (T_MATRIX) -> float
+    '''
+    - https://www.ling.upenn.edu/courses/cogs501/LinearAlgebraReview.html
+        if the inner product of every non-identical pair is 0 (i.e. they are orthogonal), and
+        the product of every vector with itself is 1 (i.e. the vectors all have geometric length 1).
+    '''
+    if is_vector(VA):
+        return round(magnitude(VA), 9) == 1
+    elif is_matrix(VA):
+        gonal = orthogonal(VA)
+        normal = all(orthonormal(vec) for vec in matrix_to_vectors(VA))
+        return gonal and normal
+    else:
+        raise TypeError('VA is neither a vector nor a matrix!')
+
+
 def vectors_to_matrix(vecs):
     # type: (List[T_MATRIX]) -> T_MATRIX
     '''
@@ -209,7 +284,7 @@ def is_multipliable(A, B, raise_on_error=False):
     return truth
 
 
-def vector_multiply(A, V):
+def matrix_vector_multiply(A, V):
     # type: (T_MATRIX, T_MATRIX) -> T_MATRIX
     '''
     Description:
@@ -260,6 +335,6 @@ def matrix_multiply(A, B):
     is_multipliable(A, B, raise_on_error=True)
     C = []
     for col, b_vec in enumerate(matrix_to_vectors(B)):
-        a_vec = vector_multiply(A, b_vec)
+        a_vec = matrix_vector_multiply(A, b_vec)
         C.append(a_vec)
     return vectors_to_matrix(C)

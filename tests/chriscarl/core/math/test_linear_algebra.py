@@ -84,12 +84,35 @@ class TestCase(UnitTest):
 
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
+        A = [
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+        V = [
+            [0],
+            [0],
+            [0],
+        ]
         variables = [
+            (lib.create, (2, 3)),
+            (lib.create, (3, 1)),
+            (lib.transpose, A),
+            (lib.transpose, V),
             (lib.to_matrix, self.A),
             (lib.to_matrix, self.B),
             (lib.to_matrix, self.C),
         ]
         controls = [
+            A,
+            V,
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0],
+            ],
+            [
+                [0, 0, 0],
+            ],
             self.A_mat,
             self.B_mat,
             self.C_vec,
@@ -128,30 +151,56 @@ class TestCase(UnitTest):
             [3, 4, 5],
         ]
         variables = [
+            (lib.magnitude, ([[3], [4]])),
+            (lib.orthonormal, ([[1], [1]])),
+            (lib.orthonormal, ([[0], [1]])),
             (lib.is_addable, (self.A_mat, self.A_mat)),
             (lib.is_addable, (self.A_mat, self.B_mat)),
             (lib.is_addable, (self.A_mat, self.B_mat), dict(raise_on_error=True)),
             (lib.add, (self.A_mat, self.A_mat)),
+            (lib.add, ([[0, 1, 2]], [[0, 1, 2]])),
+            (lib.add, ([[0], [1], [2]], [[0], [1], [2]])),
             (lib.scalar_multiply, (1, self.A_mat)),
             (lib.scalar_multiply, (-2, self.A_mat)),
+            (lib.vector_multiply, ([[1], [1]], [[1], [1], [1]])),
+            (lib.vector_multiply, ([[1], [1]], [[1], [1]])),
+            (lib.vector_multiply, ([[0], [1]], [[1], [1]])),
+            (lib.vector_multiply, ([[4], [0]], [[0], [3]])),
             (lib.matrix_to_vectors, self.C_vec),  # generator
             (lib.matrix_to_vectors, self.A_mat),
             (lib.matrix_to_vectors, [1, 2, 3]),
             (lib.vectors_to_matrix, A_vecs),
             (lib.vectors_to_matrix, vec0),
+            (lib.orthogonal, [[0, 0, 1], [0, 1, 0], [1, 0, 0]]),
+            (lib.orthogonal, [[0, 1, 1], [0, 1, 0], [1, 0, 0]]),
+            (lib.orthonormal, [[0, 0, 1], [0, 1, 0], [1, 0, 0]]),
+            (lib.orthonormal, [[0, 1, 1], [0, 1, 0], [1, 0, 0]]),
         ]
         controls = [
+            5,
+            False,
+            True,
             True,
             False,
             ValueError,
             pos2,
+            [[0, 2, 4]],
+            [[0], [2], [4]],
             self.A_mat,
             neg2,
+            ValueError,
+            2,
+            1,
+            0,  # they are orthogonal
             [self.C_vec],
             A_vecs,
             TypeError,
             vec_mat,
             TypeError,
+            True,
+            False,
+            True,
+            False,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -184,11 +233,6 @@ class TestCase(UnitTest):
             [4],
             [10],
         ]
-        BxC = [  # np.arary() @ np.array()
-            [6., 7., 8., 9.],
-            [-20., -22., -24., -26.],
-            [42., 45., 48., 51.],
-        ]
         mat_a = [
             ['a11', 'a12'],
             ['a21', 'a22'],
@@ -199,9 +243,9 @@ class TestCase(UnitTest):
             ['b21'],
         ]
         variables = [
-            (lib.vector_multiply, (mat_a, vec_b)),
-            (lib.vector_multiply, (self.A_mat, self.C_vec)),
-            (lib.vector_multiply, (self.B_mat, self.C_vec)),
+            (lib.matrix_vector_multiply, (mat_a, vec_b)),
+            (lib.matrix_vector_multiply, (self.A_mat, self.C_vec)),
+            (lib.matrix_vector_multiply, (self.B_mat, self.C_vec)),
         ]
         controls = [
             [
