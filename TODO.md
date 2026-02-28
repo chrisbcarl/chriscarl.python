@@ -1,7 +1,6 @@
 # TODO
 - ARGHHHH
-    - everything is fucking broken in `dev audit cov`
-    - DO NOT RUN
+    - everything is fucking broken in `dev audit cov` somehow, its creating files and shit
 
 
 - FEATURES

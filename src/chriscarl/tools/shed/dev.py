@@ -10,6 +10,7 @@ tools.shed.dev is the "shed" in which all of the "tools" go to pick one up.
 tool are modules that define usually cli tools or mini applets that I or other people may find interesting or useful.
 
 Updates:
+    2026-02-27 - tools.shed.dev - FIX: tests weren't being generated correctly and skipping folders
     2026-01-07 - tools.shed.dev - create_modules_and_tests added namespace so that __init__ doesnt get added and related tests are removed
     2026-01-05 - tools.shed.dev - audit_cov uses python -m instead of pytest alone
     2024-12-20 - tools.shed.dev - audit_banned now includes the filename, lol
@@ -103,6 +104,10 @@ def create_modules_and_tests(
                 raise ValueError('you provided root module {} and module {}, you dont need the root in the 2nd.'.format(root_module, module))
 
         for m, module in enumerate(modules):
+            module_relpath = ''
+            test_relpath = ''
+            token = ''
+
             tokens = [root_module] + module.split('.')  # ['module', 'a', 'b']
             if namespace:
                 namespaced_module = '.'.join(tokens[:-1])
@@ -137,6 +142,8 @@ def create_modules_and_tests(
                 for t, token in enumerate(tokens[:-1]):  # ['module', 'a']
                     directory = '{}/{}'.format(src_dirname, '/'.join(tokens[:t + 1]))
                     module_so_far = '.'.join(tokens[:t + 1])
+                    if module_so_far in NAMESPACED_MODULES:
+                        continue
                     current_init_relpath = '{}/__init__.py'.format(directory)
                     if namespaced_module and module_so_far in namespaced_module:
                         doit = True
@@ -178,6 +185,7 @@ def create_modules_and_tests(
                             created_type_module_filepaths.append(('__init__', module_so_far, abspath(current_init_relpath)))
 
                 # create module file
+                doit = False
                 module_relpath = '{}/{}.py'.format(src_dirname, '/'.join(tokens))
                 module_bad_dirpath = '{}/{}'.format(src_dirname, '/'.join(tokens))
                 if os.path.isdir(module_bad_dirpath):
@@ -253,21 +261,25 @@ def create_modules_and_tests(
                     module_so_far = '.'.join(tokens[:t + 1])
                     test_relpath = '{}/test_{}.py'.format(current_directory, token)
                     # test_relpath = '{}/test_{}.py'.format(tests_base, module_so_far)
+                    if module_so_far in NAMESPACED_MODULES:
+                        current_directory = '{}/{}'.format(current_directory, token)
+                        continue
                     if namespaced_module and module_so_far in namespaced_module:
                         doit = True
                         if os.path.isfile(test_relpath):
                             LOGGER.error(
                                 'module %d / %d - %s - step 5 - tests from %r - "%s" exists! remove namespace %r with --force!', m,
-                                len(modules) - 1, module, token, current_init_relpath, namespaced_module
+                                len(modules) - 1, module, token, test_relpath, namespaced_module
                             )
                             if force:
                                 LOGGER.critical(
                                     'module %d / %d - %s - step 5 - tests from %r - "%s" already exists! FORCING REMOVAL to conform to namespace %r!', m,
-                                    len(modules) - 1, module, token, current_init_relpath, namespaced_module
+                                    len(modules) - 1, module, token, test_relpath, namespaced_module
                                 )
                             else:
                                 doit = False
                                 warnings += 1
+                                current_directory = '{}/{}'.format(current_directory, token)
                                 continue
                         else:
                             doit = False
@@ -571,6 +583,7 @@ def audit_banned(root_dirpath, words, word_case_insensitive=True, extensions=Non
     for relpath in walk(root_dirpath, extensions=extensions, ignore=ignore, include=include, case_insensitive=file_case_insensitive, relpath=True):
         if len(relpath) > longest:
             longest = len(relpath)
+        contents = ''
         try:
             contents = read_text_file(abspath(root_dirpath, relpath))
         except UnicodeDecodeError:

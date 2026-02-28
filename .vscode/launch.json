@@ -36,6 +36,7 @@
             "program": "${workspaceFolder}/src/chriscarl/tools/dev.py",
             "console": "integratedTerminal",
             "args": [
+                "create", "core.math.calculus", "--namespace",
                 // "create", "core.functors.parse", "--force",
                 // "create", "mod.lib.stdlib.logging", "--force",
                 // "create", "a.b", "--cwd", "/tmp", "--module", "test", "--force",
@@ -43,11 +44,9 @@
                 // "audit", "relpath",
                 // "audit", "tdd",
                 // "audit", "banned", "--words-additional", "fuck", "shit",
-                "audit",
-                "stubs",
+                // "audit", "stubs",
                 //
-                "--log-level",
-                "DEBUG",
+                "--log-level", "DEBUG",
             ]
         },
         {
