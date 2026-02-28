@@ -3,13 +3,15 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2024-11-25
+Date:           2026-02-27
 Description:
 
 chriscarl.core.types unit test.
 
+pytest --cov=chriscarl.core.types tests/chriscarl/core/test_types.py --cov-report term-missing
+
 Updates:
-    2024-11-25 - tests.chriscarl.core.types - initial commit
+    2026-02-27 - tests.chriscarl.core.types - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -18,10 +20,13 @@ import os
 import sys
 import logging
 import unittest
+from typing import Any
 
 # third party imports
 
 # project imports (expected to work)
+from chriscarl.core import constants
+from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
@@ -38,24 +43,30 @@ THIS_MODULE = sys.modules[__name__]
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+constants.fix_constants(lib)  # deal with namespace sharding the files across directories
+
 
 class TestCase(UnitTest):
 
     def setUp(self):
-        return super().setUp()
+        super().setUp()
+        # do other set ups (set up super first)
 
     def tearDown(self):
-        return super().tearDown()
+        # do other tear downs (tear down super after)
+        super().tearDown()
 
     @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
             (sum, [0, 1, 2, 3]),
             (sum, [0, 1, 2, 3]),
+            (print, "dont care"),
         ]
         controls = [
             6,
             6,
+            Any,
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -64,6 +75,7 @@ if __name__ == '__main__':
     tc = TestCase()
     tc.setUp()
 
-    tc.test_case_0()
-
-    tc.tearDown()
+    try:
+        tc.test_case_0()
+    finally:
+        tc.tearDown()

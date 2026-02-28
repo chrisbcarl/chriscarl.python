@@ -1,4 +1,9 @@
 # TODO
+- ARGHHHH
+    - everything is fucking broken in `dev audit cov`
+    - DO NOT RUN
+
+
 - FEATURES
     unittest
         on failed unit test, print the experiment on the left, the control on the right, vars if you have to...

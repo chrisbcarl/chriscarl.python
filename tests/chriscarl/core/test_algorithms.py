@@ -3,13 +3,15 @@
 '''
 Author:         Chris Carl
 Email:          chrisbcarl@outlook.com
-Date:           2026-02-02
+Date:           2026-02-27
 Description:
 
 chriscarl.core.algorithms unit test.
 
+pytest --cov=chriscarl.core.algorithms tests/chriscarl/core/test_algorithms.py --cov-report term-missing
+
 Updates:
-    2026-02-02 - tests.chriscarl.core.algorithms - initial commit
+    2026-02-27 - tests.chriscarl.core.algorithms - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -18,6 +20,7 @@ import os
 import sys
 import logging
 import unittest
+from typing import Any
 
 # third party imports
 
@@ -46,20 +49,24 @@ constants.fix_constants(lib)  # deal with namespace sharding the files across di
 class TestCase(UnitTest):
 
     def setUp(self):
-        return super().setUp()
+        super().setUp()
+        # do other set ups (set up super first)
 
     def tearDown(self):
-        return super().tearDown()
+        # do other tear downs (tear down super after)
+        super().tearDown()
 
     @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
             (sum, [0, 1, 2, 3]),
             (sum, [0, 1, 2, 3]),
+            (print, "dont care"),
         ]
         controls = [
             6,
             6,
+            Any,
         ]
         self.assert_null_hypothesis(variables, controls)
 

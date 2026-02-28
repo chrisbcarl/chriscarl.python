@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         
-Email:          
+Author:         Chris Carl
+Email:          chrisbcarl@outlook.com
 Date:           2026-02-27
 Description:
 
-chriscarl.core.lib.stdlib unit test.
+chriscarl.core.data_structures unit test.
 
-pytest --cov=chriscarl.core.lib.stdlib tests/chriscarl/core/lib/test_stdlib.py --cov-report term-missing
+pytest --cov=chriscarl.core.data_structures tests/chriscarl/core/test_data_structures.py --cov-report term-missing
 
 Updates:
-    2026-02-27 - tests.chriscarl.core.lib.stdlib - initial commit
+    2026-02-27 - tests.chriscarl.core.data_structures - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -30,9 +30,9 @@ from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import chriscarl.core.lib.stdlib as lib
+import chriscarl.core.data_structures as lib
 
-SCRIPT_RELPATH = 'tests/chriscarl/core/lib/test_stdlib.py'
+SCRIPT_RELPATH = 'tests/chriscarl/core/test_data_structures.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
