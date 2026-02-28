@@ -66,7 +66,11 @@ LOGGER.addHandler(logging.NullHandler())
 DEFAULT_ROOT_LIB = chriscarl.__name__
 DEFAULT_METADATA = metadata.metadata(DEFAULT_ROOT_LIB)
 DEFAULT_AUTHOR = DEFAULT_METADATA.json['author']
+if isinstance(DEFAULT_AUTHOR, list):
+    raise NotImplementedError('metadata.metadata change of interface...')
 DEFAULT_EMAIL = DEFAULT_METADATA.json['author_email']
+if isinstance(DEFAULT_EMAIL, list):
+    raise NotImplementedError('metadata.metadata change of interface...')
 DEFAULT_TESTS_DIRNAME = os.path.basename(TESTS_DIRPATH)
 DEFAULT_BANNED_WORDS_FILEPATH = 'ignoreme/_banned'
 DEFAULT_THRESHOLD = 0.83  # 85 is better but interpolated shadow modules from templates get 83% testable
@@ -80,11 +84,11 @@ class Mode:
     '''
     mode: str
     cwd: str
-    module: str
-    author: str
-    email: str
-    log_level: str
-    log_filepath: str
+    module: str = DEFAULT_ROOT_LIB
+    author: str = DEFAULT_AUTHOR
+    email: str = DEFAULT_EMAIL
+    log_level: str = 'INFO'
+    log_filepath: str = DEFAULT_LOG_FILEPATH
 
     @classmethod
     def main(cls):
@@ -237,7 +241,7 @@ class Run(Mode):
                 - builtins.locals()
                 - builtins.globals()
     '''
-    print_help: bool
+    print_help: bool = False
     funcs: List[str] = field(default_factory=lambda: [])
 
     @classmethod
@@ -266,11 +270,11 @@ class Audit(Mode):
         - dev audit relpath
         - dev audit manifest-modify
     '''
-    func: Callable
-    dirpath: str
-    dry: bool
-    no_modify: bool
-    no_verify: bool
+    func: Callable = dev.audit_manifest
+    dirpath: str = REPO_DIRPATH
+    dry: bool = False
+    no_modify: bool = False
+    no_verify: bool = False
     included_dirs: List[str] = field(default_factory=lambda: ['src/', 'tests'])
     tests_dirname: str = DEFAULT_TESTS_DIRNAME
     words_filepath: str = DEFAULT_BANNED_WORDS_FILEPATH
