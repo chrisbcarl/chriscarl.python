@@ -5,14 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "[python] - Current",
+            "name": "[python] - current",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
         },
         {
-            "name": "[python] - Current (!justMyCode)",
+            "name": "[python] - current (!justMyCode)",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
@@ -20,7 +20,7 @@
             "justMyCode": false,
         },
         {
-            "name": "[pytest] - Current",
+            "name": "[pytest] - current",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",

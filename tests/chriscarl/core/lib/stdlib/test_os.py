@@ -18,6 +18,7 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+import re
 
 # third party imports
 
@@ -98,6 +99,7 @@ class TestCase(UnitTest):
             (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=None)),
             (lib.walk, ('./', ), dict(extensions=extensions, ignore=ignore_dirs, include=['src/', 'tests/'])),
             (lib.walk_regex, (SCRIPT_DIRPATH, r'^test_.+\.py$'), dict(basename=True)),
+            (lib.walk_regex, (SCRIPT_DIRPATH, re.compile(r'^test_.+\.py$')), dict(basename=True)),
         ]
         controls = [
             self.relpaths,
@@ -105,6 +107,7 @@ class TestCase(UnitTest):
             abspaths,
             include,
             ignore,
+            [file for file in os.listdir(SCRIPT_DIRPATH) if file.endswith('.py')],
             [file for file in os.listdir(SCRIPT_DIRPATH) if file.endswith('.py')],
         ]
         self.assert_null_hypothesis(variables, controls)

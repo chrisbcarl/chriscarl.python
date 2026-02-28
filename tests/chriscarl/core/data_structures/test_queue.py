@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Author:         {author}
-Email:          {email}
-Date:           {date}
+Author:         Chris Carl
+Email:          chrisbcarl@outlook.com
+Date:           2026-02-27
 Description:
 
-{module_dot_path} unit test.
-
-pytest --cov={module_dot_path} {script_relpath} --cov-report term-missing
+chriscarl.core.data_structures.queue unit test.
 
 Updates:
-    {date} - {test_module_dot_path} - initial commit
+    2026-02-27 - tests.chriscarl.core.data_structures.queue - initial commit
 '''
 
 # stdlib imports (expected to work)
@@ -30,9 +28,9 @@ from chriscarl.core.lib.stdlib.os import abspath
 from chriscarl.core.lib.stdlib.unittest import UnitTest
 
 # test imports
-import {module_dot_path} as lib
+import chriscarl.core.data_structures.queue as lib
 
-SCRIPT_RELPATH = '{script_relpath}'
+SCRIPT_RELPATH = 'tests/chriscarl/core/data_structures/test_queue.py'
 if not hasattr(sys, '_MEIPASS'):
     SCRIPT_FILEPATH = os.path.abspath(__file__)
 else:
@@ -56,17 +54,33 @@ class TestCase(UnitTest):
         # do other tear downs (tear down super after)
         super().tearDown()
 
-    @unittest.skip('lorem ipsum')
+    # @unittest.skip('lorem ipsum')
     def test_case_0(self):
+        q = lib.Queue(range(3))
+        f = lib.FIFO()
         variables = [
-            (sum, [0, 1, 2, 3]),
-            (sum, [0, 1, 2, 3]),
-            (print, "dont care"),
+            (q.__eq__, [0, 1, 2]),
+            (q.push, 3),
+            (q.__eq__, [0, 1, 2, 3]),
+            (q.pop, ()),
+            (f.push, (0)),
+            (f.push, (1)),
+            (f.push, (2)),
+            (f.pop, ()),
+            (f.pop, ()),
+            (f.pop, ()),
         ]
         controls = [
-            6,
-            6,
+            True,
             Any,
+            True,
+            0,  # 0 inserted "first", so first out
+            Any,
+            Any,
+            Any,
+            0,  # 0 was inserted "first", so first out
+            1,
+            2,
         ]
         self.assert_null_hypothesis(variables, controls)
 
