@@ -123,6 +123,7 @@ class TestCase(UnitTest):
         two = f'{self.bibtex_good_ugly}\n{self.bibtex_good_small}'
         duped = f'{self.bibtex_good_small}\n{self.bibtex_good_small}'
         variables = [
+            (lib.get_label_citation, ('', )),
             (lib.get_label_citation, (self.bibtex_null, ), dict(pretty=False)),
             (lib.get_label_citation, (two, ), dict(pretty=False)),
             (lib.get_label_citation, (self.bibtex_good_small, ), dict(pretty=False)),
@@ -130,6 +131,7 @@ class TestCase(UnitTest):
             (lib.get_label_citation, (duped, ), dict(pretty=False, dedupe=True)),
         ]
         controls = [
+            {},
             KeyError,
             {
                 self.bibtex_good_ugly_key: self.bibtex_good_ugly,

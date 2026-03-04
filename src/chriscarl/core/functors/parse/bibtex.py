@@ -10,6 +10,7 @@ core.functors.parse.bibtex is funcs that deal with text that is hopefully bibtex
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-03-03 - core.functors.parse.bibtex - FIX: get_label_citation would return {'': ''} from empty text and that's nonsense
     2026-02-15 - core.functors.parse.bibtex - apparently spaces to the keys is legal
     2026-02-04 - core.functors.parse.bibtex - added extract_from_and_remove, get_label_citation--slight re-work to support extracting non-bibtex and dealing with label duplicates and nulls
     2026-02-01 - core.functors.parse.bibtex - periods work as keys
@@ -192,9 +193,10 @@ def get_label_citation(text, parse=True, pretty=True, indent=4, nulls=False, ded
         prev_start = start
         prev_label = label
 
-    if prev_label in dick:
-        dupes.add(prev_label)
-    if dupes and not dedupe:
-        raise ValueError(f'{len(dupes)} duplicate labels: {list(sorted(dupes))}')
-    dick[prev_label] = text[prev_start:].rstrip()
+    if prev_label:
+        if prev_label in dick:
+            dupes.add(prev_label)
+        if dupes and not dedupe:
+            raise ValueError(f'{len(dupes)} duplicate labels: {list(sorted(dupes))}')
+        dick[prev_label] = text[prev_start:].rstrip()
     return dick

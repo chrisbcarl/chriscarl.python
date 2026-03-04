@@ -10,6 +10,7 @@ core.functors.parse.latex is stuff that mostly parses LaTeX.
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-03-02 - core.functors.parse.latex - added lstlisting_supported
     2026-02-16 - core.functors.parse.latex - added matrix_to_latex
     2026-02-15 - core.functors.parse.latex - augmented evaluate, need for proper stack solution obvious
     2026-02-05 - core.functors.parse.latex - added evaluate
@@ -173,15 +174,15 @@ def latex_replace(text):
     return text
 
 
-def evaluate(latex):
-    # type: (str) -> int|float
+def evaluate(latex, lcls):
+    # type: (str, dict) -> int|float
     # BUG: fails on r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', will need a flexible command level stack-based solution...
     latex = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', latex)
     latex = re.sub(r'\\sqrt\{([^\}]+)\}', r'math.sqrt(\g<1>)', latex)
     latex = latex.replace('^', '**')
     latex = latex.replace(')(', ') * (')
     latex = re.sub(r'(\d)\s*\(', r'\g<1> * (', latex)
-    return eval(latex)
+    return eval(latex, None, lcls)
 
 
 def matrix_to_latex(array, column_vector=True, one_line=False):
@@ -205,3 +206,68 @@ def matrix_to_latex(array, column_vector=True, one_line=False):
             return ' '.join(tokens)
         else:
             return f'{tokens[0]}\n{indent("\n".join(tokens[1:-1]))}\n{tokens[-1]}'
+
+
+LSTLISTINGS = '''
+# https://www.overleaf.com/learn/latex/Code_listing
+ABAP (R/2 4.3, R/2 5.0, R/3 3.1, R/3 4.6C, R/3 6.10)	ACSL
+Ada (2005, 83, 95)	Algol (60, 68)
+Ant	Assembler (Motorola68k, x86masm)
+Awk (gnu, POSIX)	bash
+Basic (Visual)	C (ANSI, Handel, Objective, Sharp)
+C++ (ANSI, GNU, ISO, Visual)	Caml (light, Objective)
+CIL	Clean
+Cobol (1974, 1985, ibm)	Comal 80
+command.com (WinXP)	Comsol
+csh	Delphi
+Eiffel	Elan
+erlang	Euphoria
+Fortran (77, 90, 95)	GCL
+Gnuplot	Haskell
+HTML	IDL (empty, CORBA)
+inform	Java (empty, AspectJ)
+JVMIS	ksh
+Lingo	Lisp (empty, Auto)
+Logo	make (empty, gnu)
+Mathematica (1.0, 3.0, 5.2)	Matlab
+Mercury	MetaPost
+Miranda	Mizar
+ML	Modula-2
+MuPAD	NASTRAN
+Oberon-2	OCL (decorative, OMG)
+Octave	Oz
+Pascal (Borland6, Standard, XSC)	Perl
+PHP	PL/I
+Plasm	PostScript
+POV	Prolog
+Promela	PSTricks
+Python	R
+Reduce	Rexx
+RSL	Ruby
+S (empty, PLUS)	SAS
+Scilab	sh
+SHELXL	Simula (67, CII, DEC, IBM)
+SPARQL	SQL
+tcl (empty, tk)	TeX (AlLaTeX, common, LaTeX, plain, primitive)
+VBScript	Verilog
+VHDL (empty, AMS)	VRML (97)
+XML	XSLT'''
+LSTLISTING_DICT = {}
+for __line in LSTLISTINGS.splitlines():
+    if not __line or __line.startswith('#'):
+        continue
+    tokens = __line.split('\t')
+    for token in tokens:
+        token = token.strip()
+        if '(' not in token:
+            LSTLISTING_DICT[token.lower()] = token
+        else:
+            token, subs = token[:-1].split('(')
+            for sub in subs.split(','):
+                subtoken = f'{token.strip()}[{sub.strip()}]'
+                LSTLISTING_DICT[subtoken.lower()] = subtoken
+
+
+def lstlisting_supported(lst):
+    # type: (str) -> str|None
+    return LSTLISTING_DICT.get(lst.lower(), None)

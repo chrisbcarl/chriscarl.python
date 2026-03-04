@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-03-02 - core.lib.stdlib.os - FIX: filepaths werent being abspathed before read/write
     2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place, added listdir_mtime
     2026-02-20 - core.lib.stdlib.os - added walk_regex
     2026-01-30 - core.lib.stdlib.os - added wait_for_new_file, listdir

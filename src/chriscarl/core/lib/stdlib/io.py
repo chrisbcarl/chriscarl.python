@@ -28,7 +28,7 @@ import dataclasses
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.os import make_file_dirpath, is_file
+from chriscarl.core.lib.stdlib.os import abspath, make_file_dirpath, is_file
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/io.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -49,7 +49,7 @@ ENCODINGS_TYPICAL = [sys.getfilesystemencoding(), locale.getpreferredencoding(),
 def read_text_file(filepath, encoding='utf-8'):
     # type: (str, str) -> str
     try:
-        with open(filepath, 'r', encoding=encoding) as r:
+        with open(abspath(filepath), 'r', encoding=encoding) as r:
             return r.read()
     except UnicodeDecodeError as ude:
         raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason)) from ude
@@ -60,7 +60,7 @@ def read_text_file_try(filepath, encodings=ENCODINGS_TYPICAL):
     # https://stackoverflow.com/a/36316351
     for e, encoding in enumerate(encodings):
         try:
-            with open(filepath, 'r', encoding=encoding) as r:
+            with open(abspath(filepath), 'r', encoding=encoding) as r:
                 return r.read()
         except UnicodeDecodeError as ude:
             if e + 1 == len(encodings):
@@ -70,21 +70,21 @@ def read_text_file_try(filepath, encodings=ENCODINGS_TYPICAL):
 
 def read_bytes_file(filepath):
     # type: (str) -> bytes
-    with open(filepath, 'rb') as rb:
+    with open(abspath(filepath), 'rb') as rb:
         return rb.read()
 
 
 def write_text_file(filepath, content, encoding='utf-8', newline='\n'):
     # type: (str, str, str, str) -> int
     make_file_dirpath(filepath)
-    with open(filepath, 'w', encoding=encoding, newline=newline) as w:
+    with open(abspath(filepath), 'w', encoding=encoding, newline=newline) as w:
         return w.write(content)
 
 
 def write_bytes_file(filepath, content):
     # type: (str, bytes) -> int
     make_file_dirpath(filepath)
-    with open(filepath, 'wb') as wb:
+    with open(abspath(filepath), 'wb') as wb:
         return wb.write(content)
 
 

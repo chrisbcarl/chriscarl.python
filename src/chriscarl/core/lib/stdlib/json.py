@@ -10,6 +10,7 @@ core.lib.stdlib.json is all about making sure I dont have to write indent=4 or c
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-03-02 - core.lib.stdlib.json - FIX: filepaths werent being abspathed before read/write
     2026-02-23 - core.lib.stdlib.json - added ReadWriteJson
     2024-11-24 - core.lib.stdlib.json - initial commit
 '''
@@ -26,7 +27,7 @@ import dataclasses
 # third party imports
 
 # project imports
-from chriscarl.core.lib.stdlib.os import make_file_dirpath, is_file
+from chriscarl.core.lib.stdlib.os import abspath, make_file_dirpath, is_file
 from chriscarl.core.lib.stdlib.io import ReadWriteText
 
 SCRIPT_RELPATH = 'chriscarl/core/lib/stdlib/json.py'
@@ -44,7 +45,7 @@ LOGGER.addHandler(logging.NullHandler())
 def read_json(filepath, encoding='utf-8'):
     # type: (str, str) -> Dict[str, str]
     try:
-        with open(filepath, 'r', encoding=encoding) as r:
+        with open(abspath(filepath), 'r', encoding=encoding) as r:
             return json.load(r)
     except UnicodeDecodeError as ude:
         raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
@@ -53,7 +54,7 @@ def read_json(filepath, encoding='utf-8'):
 def read_json_list(filepath, encoding='utf-8'):
     # type: (str, str) -> list
     try:
-        with open(filepath, 'r', encoding=encoding) as r:
+        with open(abspath(filepath), 'r', encoding=encoding) as r:
             return json.load(r)
     except UnicodeDecodeError as ude:
         raise UnicodeDecodeError(ude.encoding, ude.object, ude.start, ude.end, '"{}" reason: {}'.format(filepath, ude.reason))
@@ -62,7 +63,7 @@ def read_json_list(filepath, encoding='utf-8'):
 def write_json(filepath, content, encoding='utf-8', indent=4, newline='\n'):
     # type: (str, dict, str, int, str) -> None
     make_file_dirpath(filepath)
-    with open(filepath, 'w', encoding=encoding, newline=newline) as w:
+    with open(abspath(filepath), 'w', encoding=encoding, newline=newline) as w:
         json.dump(content, w, indent=indent)
 
 

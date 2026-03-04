@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-03-02 - core.functors.parse.markdown - adjusted parse order for sections, not sure if effective
     2026-02-26 - core.functors.parse.markdown - if an svg it prints lineno
     2026-02-20 - core.functors.parse.markdown - moved analyze_extract_sections, sections_to_doclets from tool, brought them here.
     2026-02-01 - core.functors.parse.markdown - added table_to_list, table_to_rows
@@ -137,10 +138,13 @@ T_SECTION = Tuple[str, str, Optional[re.Match]]
 REGEX_CAPTION_LABEL_COMMON = re.compile(r'(?P<caption>(?:caption: *)[^\n]+(?:\n+))?(?P<label>(?:label: *)[^\n]+(?:\n+))?', flags=re.DOTALL | re.MULTILINE)
 REGEX_HTML_COMMENT = re.compile(r'\<\!--(.*?)--\>', flags=re.DOTALL | re.MULTILINE)
 REGEX_MARKDOWN_YAML = re.compile(r'---\n(.*?)\n---', flags=re.DOTALL | re.MULTILINE)
-REGEX_EXTRACT_SECTIONS = OrderedDict([
-    ('comment', REGEX_HTML_COMMENT),
-    ('yaml', REGEX_MARKDOWN_YAML),
-])
+REGEX_EXTRACT_SECTIONS = OrderedDict(
+    # these are SO supreme that you can just rip them out, IN THIS ORDER and nobody would care.
+    [
+        ('comment', REGEX_HTML_COMMENT),
+        ('yaml', REGEX_MARKDOWN_YAML),
+    ]
+)
 
 REGEX_MARKDOWN_TABLE = re.compile(r'(?:caption: *)?(?P<caption>[^\n]+)?\n+?(?:label: *)?(?P<label>[^\n]+)?\n+?\|(?P<content>.+?)\|\n\n', flags=re.DOTALL | re.MULTILINE)
 REGEX_MARKDOWN_LATEX = re.compile(r'\$\$\n\s*(%?\\label\{)?(?P<label>[A-Za-z0-9\-_\.]+)?(\}\n)?(?P<content>.*?)\$\$', flags=re.DOTALL | re.MULTILINE)
@@ -156,13 +160,13 @@ REGEX_MARKDOWN_LIST = re.compile(r'(?:^[ \t\n]*(?:[\d+]\. |[-\*]+) ?(?:.*)\n){1,
 
 REGEX_LARGE_SECTIONS = OrderedDict(
     [
-        # can have other stuff embedded
-        ('table', REGEX_MARKDOWN_TABLE),
-        ('latex', REGEX_MARKDOWN_LATEX),
+        # can have other stuff embedded, ORDER MATTERS because of who is considered a literal and who isnt
         ('literal', REGEX_MARKDOWN_MULTILINE_LITERAL),
         ('code', REGEX_MARKDOWN_CODE),
+        ('list', REGEX_MARKDOWN_LIST),  # lists can contain latex, tables, quotes, etc, so it is supreme
+        ('latex', REGEX_MARKDOWN_LATEX),
+        ('table', REGEX_MARKDOWN_TABLE),
         ('quote', REGEX_MARKDOWN_QUOTE),
-        ('list', REGEX_MARKDOWN_LIST),
         # implicit ('any': '')
     ]
 )

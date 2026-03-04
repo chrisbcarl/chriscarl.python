@@ -113,12 +113,13 @@ class TestCase(UnitTest):
     def test_case_4(self):
         whole = 57
         frac = 0.1875
+        lcls = locals()
         variables = [
-            (lib.evaluate, (r'1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5', )),
-            (lib.evaluate, (r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}', )),
-            (lib.evaluate, (r'\sqrt{\frac{1}{2^2}}', )),
-            (lib.evaluate, (r'\sqrt{\frac{1}{4}((50 - 56)^2 + (40 - 56)^2 + (70 - 56)^2 + (75 - 56)^2 + (45 - 56)^2)}', )),
-            (lib.evaluate, (r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', )),
+            (lib.evaluate, (r'1*2^0 + 0*2^1 + 0*2^2 + 1*2^3 + 1*2^4 + 1*2^5', lcls)),
+            (lib.evaluate, (r'\frac{0}{2^1} + \frac{0}{2^2} + \frac{1}{2^3} + \frac{1}{2^4}', lcls)),
+            (lib.evaluate, (r'\sqrt{\frac{1}{2^2}}', lcls)),
+            (lib.evaluate, (r'\sqrt{\frac{1}{4}((50 - 56)^2 + (40 - 56)^2 + (70 - 56)^2 + (75 - 56)^2 + (45 - 56)^2)}', lcls)),
+            (lib.evaluate, (r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', lcls)),
         ]
         controls = [
             whole,
