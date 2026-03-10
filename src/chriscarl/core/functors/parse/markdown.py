@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-03-09 - core.functors.parse.markdown - added table_pivot
     2026-03-02 - core.functors.parse.markdown - adjusted parse order for sections, not sure if effective
     2026-02-26 - core.functors.parse.markdown - if an svg it prints lineno
     2026-02-20 - core.functors.parse.markdown - moved analyze_extract_sections, sections_to_doclets from tool, brought them here.
@@ -38,6 +39,7 @@ from chriscarl.core.lib.stdlib.os import dirpath, is_file
 from chriscarl.core.lib.stdlib.io import read_text_file
 from chriscarl.core.types.str import indent, find_lineno_index
 from chriscarl.core.functors.parse.html import list_to_html
+from chriscarl.core.math.linear_algebra import transpose
 
 SCRIPT_RELPATH = 'chriscarl/core/functors/parse/markdown.py'
 if not hasattr(sys, '_MEIPASS'):
@@ -52,7 +54,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 def table_to_list(table_text, null=False):
-    # type: (str, bool) -> List[list]
+    # type: (str, bool) -> List[List[str]]
     table_text = table_text.strip()
     if not table_text.startswith('|') or not table_text.endswith('|'):
         raise ValueError('probably invalid markdown table! could not detect either the start pipe or end pipe!')
@@ -85,20 +87,55 @@ def table_to_rows(table_text, null=False):
     return rows
 
 
-def table_prettify(table_text):
-    # type: (str) -> str
-    rows = table_to_list(table_text, null=False)
-
+def rows_to_table(rows, pretty=True):
+    # type: (List[List[str]], bool) -> str
     fmt_cols = []
     cols = len(rows[0])
-    for col in range(0, cols):
-        maxcollen = -1
-        for row in rows:
-            maxcollen = max([maxcollen, len(row[col])])
-        fmt_cols.append('{:%ss}' % maxcollen)
+    if not pretty:
+        fmt_cols = ['{:s}'] * cols
+    else:
+        for col in range(0, cols):
+            maxcollen = -1
+            for row in rows:
+                maxcollen = max([maxcollen, len(row[col])])
+            fmt_cols.append('{:%ss}' % maxcollen)
 
     out = '\n'.join(f'|{"|".join(fmt_cols[col].format(cell) for col, cell in enumerate(row))}|' for row in rows)
     return out
+
+
+def table_prettify(table_text):
+    # type: (str) -> str
+    rows = table_to_list(table_text, null=False)
+    return rows_to_table(rows, pretty=True)
+
+
+def table_pivot(table_text, pretty=True):
+    # type: (str, bool) -> str
+    '''
+    Crudly:
+        |A |B |C |D | ->    |A |:-|E |I | ->    |A |E |I |
+        |:-|-:|--|--|       |B |-:|F |J |       |:-|:-|--|
+        |E |F |G |H |       |C |--|G |K |       |B |F |J |
+        |I |J |K |L |       |D |--|H |L |       |C |G |K |
+                                                |D |H |L |
+    '''
+    mat = table_to_list(table_text, null=False)
+    rows = transpose(mat)
+
+    # get rid of the 2nd col weirdness, and convert it to-row-wise
+    old_cols = []
+    for row in rows:
+        old_cols.append(row.pop(1))
+
+    cols = len(rows[0])
+    old_cols = old_cols[:cols]
+    while len(old_cols) != cols:
+        # may not be enough cols now
+        old_cols.append('-' * len(old_cols[-1]))
+    rows.insert(1, old_cols[:cols])
+
+    return rows_to_table(rows, pretty=pretty)
 
 
 def table_listified(content, ordered=False):

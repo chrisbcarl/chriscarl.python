@@ -122,6 +122,40 @@ class TestCase(UnitTest):
         print(errors)
         print(warnings)
 
+    def test_case_4(self):
+        table0 = '''
+|a|b|c|d|
+|-:|:-|--|---|
+|e|f|g|h|
+|i|j|k|l|
+'''
+        pivot0 = '''|a|e|i|
+|-:|:-|--|
+|b|f|j|
+|c|g|k|
+|d|h|l|'''
+
+        table1 = '''
+|a|b|
+|-:|:-|
+|c|d|
+|e|f|
+|g|h|
+'''
+        pivot1 = '''|a|c|e|g|
+|-:|:-|--|--|
+|b|d|f|h|'''
+
+        variables = [
+            (lib.table_pivot, (table0, ), dict(pretty=False)),
+            (lib.table_pivot, (table1, ), dict(pretty=False)),
+        ]
+        controls = [
+            pivot0,
+            pivot1,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -132,5 +166,6 @@ if __name__ == '__main__':
         tc.test_case_1()
         tc.test_case_2()
         tc.test_case_3()
+        tc.test_case_4()
     finally:
         tc.tearDown()
