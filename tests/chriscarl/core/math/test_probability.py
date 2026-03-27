@@ -59,12 +59,16 @@ class TestCase(UnitTest):
     # @unittest.skip('lorem ipsum')
     def test_case_0(self):
         variables = [
-            (lib.binomial_cdf, (4, 10, 0.5)),
-            (lib.binomial_exact_test, (300, 1000, 0.28)),
+            (lib.binomial_pdf, (5, 10, 0.5)),  # exactly 5 heads
+            (lib.binomial_pdf, (300, 1000, 0.28)),  # exactly 300 failures
+            (lib.binomial_cdf, (4, 10, 0.5)),  # phrased as P(X < 5) heads
+            (lib.binomial_exact_test, (300, 1000, 0.28)),  # phrased as P(X > 300) failures
         ]
         controls = [
-            0.3770,  # phrased as P(X < 5) heads
-            1 - 0.0751,  # phrased as P(X > 300) failures
+            0.2461,
+            0.0103,
+            0.3770,
+            1 - 0.0751,
         ]
         self.assert_null_hypothesis(variables, controls)
 
