@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-03-15 - core.functors.parse.markdown - modified quote regexer
     2026-03-09 - core.functors.parse.markdown - added table_pivot
     2026-03-02 - core.functors.parse.markdown - adjusted parse order for sections, not sure if effective
     2026-02-26 - core.functors.parse.markdown - if an svg it prints lineno
@@ -183,14 +184,14 @@ REGEX_EXTRACT_SECTIONS = OrderedDict(
     ]
 )
 
-REGEX_MARKDOWN_TABLE = re.compile(r'(?:caption: *)?(?P<caption>[^\n]+)?\n+?(?:label: *)?(?P<label>[^\n]+)?\n+?\|(?P<content>.+?)\|\n\n', flags=re.DOTALL | re.MULTILINE)
+REGEX_MARKDOWN_TABLE = re.compile(r'(?P<caption>(?:caption: *)[^\n]+(?:\n+))?(?P<label>(?:label: *)[^\n]+(?:\n+))?[ \t]*\|(?P<content>.+?)\|\n\n', flags=re.DOTALL | re.MULTILINE)
 REGEX_MARKDOWN_LATEX = re.compile(r'\$\$\n\s*(%?\\label\{)?(?P<label>[A-Za-z0-9\-_\.]+)?(\}\n)?(?P<content>.*?)\$\$', flags=re.DOTALL | re.MULTILINE)
 REGEX_MARKDOWN_MULTILINE_LITERAL = re.compile(r'```\n(?P<content>.*?)```', flags=re.DOTALL | re.MULTILINE)
 REGEX_MARKDOWN_CODE = re.compile(
-    r'(?:caption: *)?(?P<caption>[^\n]+)?\n+?(?:label: *)?(?P<label>[^\n]+)?\n+?```(?P<language>[a-z\-\+\# ]+?)\n(?P<content>.*?)```', flags=re.DOTALL | re.MULTILINE
+    r'(?P<caption>(?:caption: *)[^\n]+(?:\n+))?(?P<label>(?:label: *)[^\n]+(?:\n+))?[ \t]*```(?P<language>[a-z\-\+\# ]+?)\n(?P<content>.*?)```', flags=re.DOTALL | re.MULTILINE
 )
 # NOTE: THIS ONE IS WEIRD, doing groups[content] will only give you the last quote, but it DOES pick all of them up...
-REGEX_MARKDOWN_QUOTE = re.compile(r'(?P<caption>(?:caption: *)[^\n]+(?:\n+))?(?P<label>(?:label: *)[^\n]+(?:\n+))?(?P<content>^>.*\n){1,}', flags=re.MULTILINE)
+REGEX_MARKDOWN_QUOTE = re.compile(r'(?P<caption>(?:caption: *)[^\n]+(?:\n+))?(?P<label>(?:label: *)[^\n]+(?:\n+))?(?P<content>^[ \t]*>.*\n){1,}', flags=re.MULTILINE)
 # NOTE: special unfortunately...
 # old - (?:[ \t\n]*(?:[\d+]\.|[-\*]+)\s*(?:.+)\n){2,}
 REGEX_MARKDOWN_LIST = re.compile(r'(?:^[ \t\n]*(?:[\d+]\. |[-\*]+) ?(?:.*)\n){1,}', flags=re.MULTILINE)
@@ -451,7 +452,7 @@ def sections_to_doclets(sections, md_filepath, output_dirpath=constants.TEMP_DIR
 
             if label:
                 if label in interdoc_labels:
-                    errors.append(f'duplicate {section} label {label!r}')
+                    errors.append(f'duplicate {section} label {label!r} at line {lineno}')
                 interdoc_labels[label] = section
 
             doclets.append(MarkdownDoclet(
@@ -546,7 +547,7 @@ def sections_to_doclets(sections, md_filepath, output_dirpath=constants.TEMP_DIR
 
                 if label:
                     if label in interdoc_labels:
-                        errors.append(f'duplicate {section_sub} label {label!r}')
+                        errors.append(f'duplicate {section_sub} label {label!r} at line {lineno}')
                     interdoc_labels[label] = section_sub
 
                 doclets.append(MarkdownDoclet(

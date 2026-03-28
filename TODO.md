@@ -1,4 +1,12 @@
 # TODO
+func to cli
+  would be nice if I could just make a cli out of a function's parameters and help...
+
+  dev run only runs parameterless functions
+  dev run core.functors.parse.latex.evaluate -h
+
+cli latex calculator
+
 - ARGHHHH
     - everything is fucking broken in `dev audit cov` somehow, its creating files and shit
 

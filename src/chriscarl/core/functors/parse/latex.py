@@ -177,6 +177,7 @@ def latex_replace(text):
 def evaluate(latex, lcls):
     # type: (str, dict) -> int|float
     # BUG: fails on r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', will need a flexible command level stack-based solution...
+    # TODO: add \cdot and \times and \over
     latex = re.sub(r'\\frac\{([^\}]+)\}\{([^\}]+)\}', r'\g<1>/\g<2>', latex)
     latex = re.sub(r'\\sqrt\{([^\}]+)\}', r'math.sqrt(\g<1>)', latex)
     latex = latex.replace('^', '**')

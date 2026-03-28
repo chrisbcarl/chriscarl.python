@@ -120,6 +120,7 @@ class TestCase(UnitTest):
             (lib.evaluate, (r'\sqrt{\frac{1}{2^2}}', lcls)),
             (lib.evaluate, (r'\sqrt{\frac{1}{4}((50 - 56)^2 + (40 - 56)^2 + (70 - 56)^2 + (75 - 56)^2 + (45 - 56)^2)}', lcls)),
             (lib.evaluate, (r'\frac{56 - 70}{\frac{15.572411502397436}{\sqrt{5}}}', lcls)),
+            (lib.evaluate, (r'\frac{0.0078 - 0}{0.03789}', lcls)),
         ]
         controls = [
             whole,
@@ -127,6 +128,7 @@ class TestCase(UnitTest):
             0.5,
             15.572411502397436,
             -2.01,
+            0.20585906571654788,
         ]
         self.assert_null_hypothesis(variables, controls)
 

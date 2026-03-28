@@ -17,6 +17,20 @@ Updates:
     2026-02-27 - core.math.linear_algebra - added transpose, magnitude, vector_multiply, orthogonal, orthonormal, matrix_vector_multiply
     2026-02-22 - core.math.linear_algebra - added vectors_to_matrix, confirmed is_multipliable, added matrix_multiply
     2026-02-18 - core.math.linear_algebra - initial commit
+
+TODO:
+    - row echelon form:
+        - https://www.emathhelp.net/calculators/linear-algebra/reduced-row-echelon-form-rref-calculator/?i=%5B%5B1%2C1%2C1%5D%2C%5B2%2C1%2C3%5D%2C%5B3%2C2%2C4%5D%5D
+        - https://math.libretexts.org/Courses/Palo_Alto_College/College_Algebra/05%3A_Systems_of_Equations_and_Inequalities/5.04%3A_Solving_Systems_with_Gaussian_Elimination
+    - matrix rank (col or row is same thanks to properties)
+        - https://www.emathhelp.net/calculators/linear-algebra/rank-of-matrix-calculator/?i=%5B%5B1%2C1%2C1%5D%2C%5B2%2C1%2C3%5D%2C%5B3%2C2%2C4%5D%5D
+    - Elementary operations are reversible transformations that preserve rank. They come in three types
+        - Row/Column Swap (Ri ↔ Rj​)
+        - Row/Column Scaling (Ri → kRi, k≠0)
+        - Row/Column Replacement (Ri ​→ Ri ​+ kRj​)
+        - We use these elementary row operations to convert the matrix into either:
+        - Row/column Echelon Form or Reduced Row/column Echelon Form
+        - Normal Form
 '''
 
 # stdlib imports
