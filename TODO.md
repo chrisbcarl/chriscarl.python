@@ -1,11 +1,4 @@
 # TODO
-func to cli
-  would be nice if I could just make a cli out of a function's parameters and help...
-
-  dev run only runs parameterless functions
-  dev run core.functors.parse.latex.evaluate -h
-
-cli latex calculator
 
 - ARGHHHH
     - everything is fucking broken in `dev audit cov` somehow, its creating files and shit
@@ -115,6 +108,15 @@ cli latex calculator
         dev create mod chriscarl.mod.lib.logging
         dev create ipynb scripts/notes/etc --template-dir ./project/create/templates --rule-dir ./project/create/rules
             where there's an implied ipynb within templates and rules
+
+func to cli
+  would be nice if I could just make a cli out of a function's parameters and help...
+
+  dev run only runs parameterless functions
+  dev run core.functors.parse.latex.evaluate -h
+
+cli latex calculator
+
 - on commit
     scan for and replace / remove
         f' strings - f'\w

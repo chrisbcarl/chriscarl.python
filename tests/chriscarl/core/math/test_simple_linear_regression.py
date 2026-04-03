@@ -53,7 +53,7 @@ class TestCase(UnitTest):
         super().setUp()
         # do other set ups (set up super first)
         trout = read_text_file(abspath(constants.TESTS_COLLATERAL_DIRPATH, 'trout.txt'))
-        # Bache, C. A., Serum, J. W., Youngs, W. D., and Lisk, D. J. (1972). Polychlorinated biphenyl residues: Accumulation in Cayuga Lake trout with age. Science 117, 1192-1193.
+        # {@trout}
         self.X = [float(line.split('\t')[0]) for line in trout.splitlines()[1:]]
         self.Y = [float(line.split('\t')[1]) for line in trout.splitlines()[1:]]
 
