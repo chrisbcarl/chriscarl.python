@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-04-03 - core.functors.parse.markdown - supports url-encoded image src
     2026-03-15 - core.functors.parse.markdown - modified quote regexer
     2026-03-09 - core.functors.parse.markdown - added table_pivot
     2026-03-02 - core.functors.parse.markdown - adjusted parse order for sections, not sure if effective
@@ -27,10 +28,11 @@ import os
 import sys
 import logging
 import re
-from typing import List, Dict, Optional, Tuple
 import dataclasses
 import pathlib
+from urllib.parse import unquote_plus
 from collections import OrderedDict
+from typing import List, Dict, Optional, Tuple
 
 # third party imports
 
@@ -508,6 +510,10 @@ def sections_to_doclets(sections, md_filepath, output_dirpath=constants.TEMP_DIR
                     path = groupdict_sub.get('path', ')')[:-1]
                     if not path:
                         errors.append(f'img missing path\n{indent(md_content_sub)}')
+                        continue
+                    path = unquote_plus(path)
+                    if '(' in path or ')' in path:
+                        errors.append(f'img problematic path, remove "()" "{path}" at line {lineno}')
                         continue
                     label = os.path.basename(path)
                     # label = re.sub(r'[^\w]', '', os.path.splitext(label)[0])
