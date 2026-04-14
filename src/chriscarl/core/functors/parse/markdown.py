@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-04-13 - core.functors.parse.markdown - disambiguated literals, didnt help much
     2026-04-03 - core.functors.parse.markdown - supports url-encoded image src
     2026-03-15 - core.functors.parse.markdown - modified quote regexer
     2026-03-09 - core.functors.parse.markdown - added table_pivot
@@ -237,8 +238,8 @@ SECTION_ABBREV = {
     'quote': ('Quote', 'Qt'),
     'list': ('List', 'Lst'),
     'any': ('Any', 'Any'),
-    'literal-inline': ('Literal', 'Lit'),
-    'latex-inline': ('LaTeX', 'LaT'),
+    'literal-inline': ('Literal', 'LIn'),
+    'latex-inline': ('LaTeX', 'Tex'),
 }
 
 # https://www.freecodecamp.org/news/how-to-write-a-regular-expression-for-a-url/
