@@ -10,7 +10,7 @@ core.operating_systems.concurrency is my way of understanding concurrency from a
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
-    2026-04-13 - core.operating_systems.concurrency - initial commit
+    2026-04-13 - core.operating_systems.concurrency - peterson
 '''
 
 # stdlib imports
