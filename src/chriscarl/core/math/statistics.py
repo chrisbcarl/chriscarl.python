@@ -54,7 +54,7 @@ def expected_value(X, precision=4):
     '''
     n = len(X)
     mu = 1/n * sum(X_i for X_i in X)
-    if round == -1:
+    if precision == -1:
         return mu
     return round(mu, precision)
 
@@ -90,7 +90,7 @@ def variance(X, precision=4):
     # NOTE: stable due to sum() using compensated summation
     # https://en.wikipedia.org/wiki/Kahan_summation_algorithm
     var = 1/(n-1) * sum((X_i - mu)**2 for X_i in X)
-    if round == -1:
+    if precision == -1:
         return var
     return round(var, precision)
 
