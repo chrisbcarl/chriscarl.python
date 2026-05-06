@@ -42,9 +42,10 @@ def expected_value(X, precision=4):
     r'''
     Description:
         $$
+        E(X) = \mu \approx \bar{X} \\
+        E(aX + b) = a E(X) + b
         E(X) = \mu = \frac{1}{n} \sum X_i \\
         E(X^2) = \frac{1}{n} \sum X_i^2 \\
-        E(aX + b) = a E(X) + b
         $$
     Arguments:
         X: List[float|int]
@@ -67,10 +68,11 @@ def variance(X, precision=4):
     r'''
     Description:
         $$
+        Var(X) = \sigma^2 \\
+        Var(aX + b) = E([aX + b]^2) - E(aX + b)^2 = a^2 Var(X) \\
         Var(X) = \sigma^2 = E[(X - E(X))^2]  \\  % NOTE: bug catastrophic cancellation
         Var(X) = \sigma^2 = E(X^2) - E(X)^2  \\  % NOTE: bug catastrophic cancellation
-        Var(X) = \frac{1}{n - 1} \sum_{i=1}^{n} (X_i - \bar{X})^2  \\  % SS sum of squares method, "two-pass", stable
-        Var(aX + b) = E([aX + b]^2) - E(aX + b)^2 = a^2 Var(X) \\
+        Var(X) = \sigma^2 = \frac{1}{n - 1} \sum_{i=1}^{n} (X_i - \bar{X})^2  \\  % SS sum of squares method, "two-pass", stable
         $$
     NOTE:
         - this assumes uniform PDF...
@@ -84,7 +86,8 @@ def variance(X, precision=4):
     '''
     mu = E(X)
     # NOTE: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-    var = E([(X_i - mu)**2 for X_i in X])
+    # NOTE: both of these have catestrophic cancellation effects
+    # var = E([(X_i - mu)**2 for X_i in X])
     # var = E([X_i**2 for X_i in X], precision=-1) - E(X, precision=-1)**2
     n = len(X)
     # NOTE: stable due to sum() using compensated summation

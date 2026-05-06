@@ -97,6 +97,7 @@ class TestCase(UnitTest):
         self.assert_null_hypothesis(variables, controls)
 
     def test_case_2(self):
+        lst = list(range(1, 4))
         variables = [
             (lib.combination, (-1, -1)),
             (lib.combination, (-1, 1)),
@@ -106,6 +107,9 @@ class TestCase(UnitTest):
             (lib.combination, (10, 5)),
             (lib.combination, (10, 1)),
             (lib.combination, (10, 0)),
+            (lib.combine, (lst, 1)),
+            (lib.combine, (lst, 2)),
+            (lib.combine, (lst)),
         ]
         controls = [
             ValueError,
@@ -116,6 +120,9 @@ class TestCase(UnitTest):
             math.comb(10, 5),
             math.comb(10, 1),
             math.comb(10, 0),
+            [[1], [2], [3]],
+            [[1], [2], [3], [1, 2], [1, 3], [2, 3]],
+            [[1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]],
         ]
         self.assert_null_hypothesis(variables, controls)
 

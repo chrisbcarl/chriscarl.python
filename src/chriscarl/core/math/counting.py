@@ -10,6 +10,7 @@ core.math.counting is all of the counting learnings I have had over time.
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-05-05 - core.math.counting - added combine
     2026-03-26 - core.math.counting - initial commit
 
 TODO: int_guard, make sure all inputs are ints...
@@ -20,6 +21,8 @@ from __future__ import absolute_import, print_function, division, with_statement
 import os
 import sys
 import logging
+from itertools import combinations as i_combinations, chain
+from typing import List, Any, Generator
 
 # third party imports
 
@@ -104,3 +107,16 @@ def combination(n, k):
     if (n < k):
         return 0
     return factorial(n) // (factorial(k) * factorial(n - k))
+
+
+def combine(lst, n=None):
+    # type: (List[Any], None|int) -> Generator[List[Any], None, None]
+    '''
+    original formulation:
+        from itertools import combinations, chain
+        list(chain.from_iterable(combinations(lst, r) for r in range(1, len(lst) + 1)))
+    '''
+    n = len(lst) if n is None else n
+    for r in range(1, n + 1):
+        for tpl in i_combinations(lst, r):
+            yield list(tpl)
