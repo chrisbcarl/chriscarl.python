@@ -163,6 +163,27 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_4(self):
+        variables = [
+            (lib.get_digit, (367.890, 3)),
+            (lib.get_digit, (367.890, 2)),
+            (lib.get_digit, (367.890, 1)),
+            (lib.get_digit, (367.890, 0)),
+            (lib.get_digit, (367.890, -1)),
+            (lib.get_digit, (367.890, -2)),
+            (lib.get_digit, (367.890, -3)),
+        ]
+        controls = [
+            0,
+            3,
+            6,
+            7,
+            8,
+            9,
+            0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -173,5 +194,6 @@ if __name__ == '__main__':
         tc.test_case_1()
         tc.test_case_2()
         tc.test_case_3()
+        tc.test_case_4()
     finally:
         tc.tearDown()

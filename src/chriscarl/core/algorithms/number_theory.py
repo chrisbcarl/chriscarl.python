@@ -10,6 +10,7 @@ core.algorithms.number_theory contains stuff like IEEE754
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
+    2026-05-12 - core.algorithms.number_theory - added get_digit
     2026-02-05 - core.algorithms.number_theory - touch-ups
     2026-02-02 - core.algorithms.number_theory - initial commit
 '''
@@ -187,3 +188,18 @@ def ieee754_to_decimal(value, double=False):
     # )
 
     return float(n)
+
+
+def get_digit(num, pow):
+    # type: (float|int, int) -> float
+    '''
+    Description:
+        say you have 3.14 and you want the 4?
+        >>> get_fractional_digit(3.14, -2)
+        developed out of AI, Qwen3.6-35B-A3B-UD-Q5_K_XL -seed 69:
+            >>> # python code to get the digit in the 1/10th place. respond with 1 code sample or less
+            >>> digit = int(abs(num) * 10) % 10
+    '''
+    magnitude = 10**(pow)
+    digit = int(abs(num) / magnitude) % 10
+    return digit
