@@ -10,7 +10,7 @@ core.math.functions is functions that behave interestingly.
 core are modules that define the bedrock from which other things do import. non-self-referential, low-import, etc.
 
 Updates:
-    2026-05-12 - /penalty
+    2026-05-12 - core.math.functions - /initial commit
                  core.math.functions - curious first little function, 'closeness' which exhibits good 'punishment/penalty' behavior
 '''
 
