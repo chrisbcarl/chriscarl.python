@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-06-23 - core.functors.parse.markdown - disambiguated IndexError in rows_to_table
     2026-04-13 - core.functors.parse.markdown - disambiguated literals, didnt help much
     2026-04-03 - core.functors.parse.markdown - supports url-encoded image src
     2026-03-15 - core.functors.parse.markdown - modified quote regexer
@@ -100,8 +101,11 @@ def rows_to_table(rows, pretty=True):
     else:
         for col in range(0, cols):
             maxcollen = -1
-            for row in rows:
-                maxcollen = max([maxcollen, len(row[col])])
+            for r, row in enumerate(rows):
+                try:
+                    maxcollen = max([maxcollen, len(row[col])])
+                except IndexError as ie:
+                    raise Exception(f"row {r} has {len(row)} cols, expected {cols}!") from ie
             fmt_cols.append('{:%ss}' % maxcollen)
 
     out = '\n'.join(f'|{"|".join(fmt_cols[col].format(cell) for col, cell in enumerate(row))}|' for row in rows)
