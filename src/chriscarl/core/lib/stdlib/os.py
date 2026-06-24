@@ -10,7 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
-    2026-06-23 - core.lib.stdlib.os - added ext
+    2026-06-23 - core.lib.stdlib.os - added ext, relpath
     2026-03-02 - core.lib.stdlib.os - FIX: filepaths werent being abspathed before read/write
     2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place, added listdir_mtime
     2026-02-20 - core.lib.stdlib.os - added walk_regex
@@ -226,3 +226,10 @@ def wait_for_new_file(dirpath, timeout=10, bad_exts=['.crdownload'], listdir_mti
 def ext(pth):
     # type: (str) -> str
     return os.path.splitext(pth)[1]
+
+
+def relpath(*pth, cwd=os.getcwd(), posix=False):
+    rel = os.path.relpath(abspath(*pth), cwd)
+    if posix:
+        return rel.replace('\\', '/')
+    return rel

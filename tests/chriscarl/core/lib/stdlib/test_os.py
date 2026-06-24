@@ -205,10 +205,14 @@ class TestCase(UnitTest):
         variables = [
             (lib.ext, (__file__, )),
             (lib.ext, ('file.tar.gz', )),
+            (lib.relpath, (__file__, ), dict(posix=True)),
+            (lib.relpath, ('file.tar.gz', ), dict(posix=True)),
         ]
         controls = [
             '.py',
             '.gz',
+            SCRIPT_RELPATH,
+            'file.tar.gz',
         ]
         self.assert_null_hypothesis(variables, controls)
 
@@ -218,15 +222,15 @@ if __name__ == '__main__':
     tc.setUp()
 
     try:
-        tc.test_case_0_abspath()
-        tc.test_case_1_chdir()
-        tc.test_case_2_walk()
-        tc.test_case_3_drives()
-        tc.test_case_4_as_posix()
-        tc.test_case_5_as_posix_win32()
-        tc.test_case_6_easy()
-        tc.test_case_7()
-        tc.test_case_8()
+        # tc.test_case_0_abspath()
+        # tc.test_case_1_chdir()
+        # tc.test_case_2_walk()
+        # tc.test_case_3_drives()
+        # tc.test_case_4_as_posix()
+        # tc.test_case_5_as_posix_win32()
+        # tc.test_case_6_easy()
+        # tc.test_case_7()
+        # tc.test_case_8()
         tc.test_case_9()
     finally:
         tc.tearDown()
