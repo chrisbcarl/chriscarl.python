@@ -201,6 +201,17 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_9(self):
+        variables = [
+            (lib.ext, (__file__, )),
+            (lib.ext, ('file.tar.gz', )),
+        ]
+        controls = [
+            '.py',
+            '.gz',
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -216,5 +227,6 @@ if __name__ == '__main__':
         tc.test_case_6_easy()
         tc.test_case_7()
         tc.test_case_8()
+        tc.test_case_9()
     finally:
         tc.tearDown()
