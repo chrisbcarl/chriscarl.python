@@ -10,7 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
-    2026-07-02 - core.functors.parse.markdown - added table_to_csv
+    2026-07-02 - core.functors.parse.markdown - added table_to_csv with good csv defaults for handling newlines and quotes
     2026-06-23 - core.functors.parse.markdown - disambiguated IndexError in rows_to_table
     2026-04-13 - core.functors.parse.markdown - disambiguated literals, didnt help much
     2026-04-03 - core.functors.parse.markdown - supports url-encoded image src
@@ -31,6 +31,8 @@ import os
 import sys
 import logging
 import re
+import csv
+import io
 import dataclasses
 import pathlib
 from urllib.parse import unquote_plus
@@ -615,8 +617,12 @@ def markdown_to_doclets(md_filepath, output_dirpath=constants.TEMP_DIRPATH, auto
     return doclets, interdoc_labels, download_url_filepaths, errors, warnings
 
 
-def table_to_csv(table_text):
-    # type: (str) -> str
+def table_to_csv(table_text, delimiter=','):
+    # type: (str, str) -> str
     rows = table_to_list(table_text, null=False)
-    rows.pop(1)  # the justifier
-    return '\n'.join(','.join(str(ele) for ele in row) for row in rows)
+    sio = io.StringIO(newline='\n')
+    writer = csv.writer(sio, delimiter=delimiter, lineterminator='\n')
+    writer.writerow(rows[0])
+    writer.writerows(rows[2:])  # skip the justification
+    sio.seek(0)
+    return sio.getvalue()

@@ -161,16 +161,27 @@ class TestCase(UnitTest):
 |a|b|c|d|
 |-:|:-|--|---|
 |e|f|g|h|
-|i|j|k|l|
-'''
+|i|j|k|l|'''
         csv0 = '''a,b,c,d
 e,f,g,h
-i,j,k,l'''
+i,j,k,l
+'''
+        table1 = '''
+|a|b|
+|-:|:-|--|---|
+|e,f|g,h|
+|i,j|k,l|'''
+        csv1 = '''a,b
+"e,f","g,h"
+"i,j","k,l"
+'''
         variables = [
             (lib.table_to_csv, (table0, )),
+            (lib.table_to_csv, (table1, )),
         ]
         controls = [
             csv0,
+            csv1,
         ]
         self.assert_null_hypothesis(variables, controls)
 
