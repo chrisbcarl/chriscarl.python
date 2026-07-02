@@ -10,6 +10,7 @@ core.lib.stdlib.os is all about file system traversal
 core.lib.stdlib files are for utilities that make use of, but do not modify the stdlib
 
 Updates:
+    2026-07-02 - core.lib.stdlib.os - added dirname_filename_ext
     2026-06-23 - core.lib.stdlib.os - added ext, relpath
     2026-03-02 - core.lib.stdlib.os - FIX: filepaths werent being abspathed before read/write
     2026-02-24 - core.lib.stdlib.os - wait_for_new_file responds to modified in place, added listdir_mtime
@@ -30,7 +31,7 @@ import sys
 import re
 import string
 import logging
-from typing import Generator, Optional, List, Union, Dict
+from typing import Generator, Optional, List, Union, Dict, Tuple
 import time
 
 # third party imports
@@ -233,3 +234,12 @@ def relpath(*pth, cwd=os.getcwd(), posix=False):
     if posix:
         return rel.replace('\\', '/')
     return rel
+
+
+def dirname_filename_ext(*paths):
+    # type: (str) -> Tuple[str, str, str]
+    absp = abspath(*paths)
+    dirp = dirpath(absp)
+    base = os.path.basename(absp)
+    filen, ext = os.path.splitext(base)
+    return dirp, filen, ext

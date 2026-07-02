@@ -207,12 +207,14 @@ class TestCase(UnitTest):
             (lib.ext, ('file.tar.gz', )),
             (lib.relpath, (__file__, ), dict(posix=True)),
             (lib.relpath, ('file.tar.gz', ), dict(posix=True)),
+            (lib.dirname_filename_ext, ('/file.tar.gz', )),
         ]
         controls = [
             '.py',
             '.gz',
             SCRIPT_RELPATH,
             'file.tar.gz',
+            ('C:\\', 'file.tar', '.gz') if sys.platform == 'win32' else ('/', 'file.tar', '.gz'),
         ]
         self.assert_null_hypothesis(variables, controls)
 
