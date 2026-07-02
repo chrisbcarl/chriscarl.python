@@ -156,6 +156,24 @@ class TestCase(UnitTest):
         ]
         self.assert_null_hypothesis(variables, controls)
 
+    def test_case_5(self):
+        table0 = '''
+|a|b|c|d|
+|-:|:-|--|---|
+|e|f|g|h|
+|i|j|k|l|
+'''
+        csv0 = '''a,b,c,d
+e,f,g,h
+i,j,k,l'''
+        variables = [
+            (lib.table_to_csv, (table0, )),
+        ]
+        controls = [
+            csv0,
+        ]
+        self.assert_null_hypothesis(variables, controls)
+
 
 if __name__ == '__main__':
     tc = TestCase()
@@ -167,5 +185,6 @@ if __name__ == '__main__':
         tc.test_case_2()
         tc.test_case_3()
         tc.test_case_4()
+        tc.test_case_5()
     finally:
         tc.tearDown()
