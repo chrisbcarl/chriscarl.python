@@ -10,6 +10,7 @@ core.lib.stdlib.typing is tricky, but I think I can hack at it to make it useful
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
+    2026-10-11 - core.lib.stdlib.typing - added raise_w_msg
     2024-11-22 - core.lib.stdlib.typing - initial commit
 '''
 
@@ -145,6 +146,18 @@ def isof(obj, *typings):
     if len(typings) == 1:
         return isof_one(obj, *typings)
     return any(isof_one(obj, typing) for typing in typings)
+
+
+def raise_w_msg(obj, *typings, msg=''):
+    # type: (Any, T_TYPING, str) -> None
+    from chriscarl.core.lib.stdlib.inspect import get_variable_name_lineno
+    var_name = get_variable_name_lineno(obj)[0]
+    msg = msg or '{var_name!r} must be of type {required}, got {bad}'.format(
+        var_name=var_name,
+        required=typings if len(typings) > 1 else typings[0],
+        bad=type(obj),
+    )
+    raise TypeError(msg)
 
 
 def isinstance_raise(obj, *typings, msg=''):
