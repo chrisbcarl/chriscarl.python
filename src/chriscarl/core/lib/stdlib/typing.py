@@ -10,7 +10,7 @@ core.lib.stdlib.typing is tricky, but I think I can hack at it to make it useful
 core.lib are modules that contain code that is about (but does not modify) the library. somewhat referential to core.functor and core.types.
 
 Updates:
-    2026-10-11 - core.lib.stdlib.typing - added raise_w_msg
+    2026-10-11 - core.lib.stdlib.typing - added raise_w_msg, added Sequence to isof
     2024-11-22 - core.lib.stdlib.typing - initial commit
 '''
 
@@ -22,7 +22,7 @@ import inspect
 import logging
 # TODO: _AnyMeta breaks on 3.9 and 3.10...
 from typing import (  # type: ignore
-    Any, List, Literal, Iterable, Union, _AnyMeta, _UnionGenericAlias, _GenericAlias,
+    Any, Sequence, Literal, Iterable, Union, _AnyMeta, _UnionGenericAlias, _GenericAlias,
 )
 from types import ModuleType
 
@@ -62,8 +62,8 @@ def isof_typing(obj, typing):
         raise RuntimeError('ive never encountered an __args__ whose type was {} - {}!'.format(type(args), args))
     # params: tuple = getattr(typing, '__params__', None)
     if origin:
-        # Tuple, List, Set, Dict | Union | Callable | Generator | Literal
-        if name in ['List', 'Tuple', 'Dict', 'Set']:
+        # Tuple, List, Set, Dict | Union | Callable | Generator | Literal | Sequence
+        if name in ['List', 'Tuple', 'Dict', 'Set', 'Sequence']:
             # applies to list, dict, tuple, set
             if not _isinstance(obj, origin):
                 return False

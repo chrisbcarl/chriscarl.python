@@ -1,4 +1,7 @@
 # TODO
+- linear algebra
+    - continue where I left off on `linear_algebra_2.py` finished GE, haven't tested all kinds of matrix types, haven't done Ax=b as part of GE
+
 
 - ARGHHHH
     - everything is fucking broken in `dev audit cov` somehow, its creating files and shit

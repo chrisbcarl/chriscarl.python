@@ -56,6 +56,21 @@ class TestCase(UnitTest):
             [4, 5, 6],
             [7, 8, 9],
         ]
+        self.B = [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+        ]
+        self.ge_A = [
+            [2, 1, -1],
+            [-3, -1, 2],
+            [-2, 1, 2],
+        ]
+        self.ge_b = [
+            [8],
+            [-11],
+            [-3],
+        ]
         self.v = [
             [1],
             [2],
@@ -75,26 +90,58 @@ class TestCase(UnitTest):
         variables = [
             (lib.is_vector, self.v),
             (lib.is_matrix, self.A),
+            (lib.is_matrix, (self.v, self.A)),
+            (lib.is_matrix, ([1, 2, 3], )),  # row vector not a real boy
             (lib.to_matrix, self.A_latex),
             (lib.to_latex, self.A),
+            (lib.to_str, self.A),
             (lib.create, (3, 3), dict(val=69)),
-            (lib.get_dimensions, self.v),
-            (lib.get_dimensions, self.A),
+            (lib.create, (3, 3), dict(val=lambda m, n: m * n)),
+            (lib.dimensions, self.v),
+            (lib.dimensions, self.A),
+            (lib.is_addable, (self.v, self.v)),
+            (lib.is_addable, (self.v, self.A)),
+            (lib.is_multipliable, (self.v, self.v)),  # nope, 3x1 * 3x1
+            (lib.is_multipliable, (self.A, self.A)),
+            (lib.is_multipliable, (self.A, self.B)),
+            (lib.is_multipliable, (self.v, self.A)),  # nope, 3x1 * 3x3
+            (lib.is_multipliable, (self.A, self.B)),  # a linear combination, 3x3 * 3*1 = 3x3
         ]
         controls = [
             True,
             True,
+            True,
+            False,
             self.A,
             self.A_latex,
+            '''1 2 3
+4 5 6
+7 8 9''',
             [
                 [69, 69, 69],
                 [69, 69, 69],
                 [69, 69, 69],
             ],
+            [
+                [1, 2, 3],
+                [2, 4, 6],
+                [3, 6, 9],
+            ],
             (3, 1),
             (3, 3),
+            True,
+            False,
+            False,
+            True,
+            True,
+            False,
+            True,
         ]
         self.assert_null_hypothesis(variables, controls)
+
+        print(lib.to_str(self.A))
+        P, L, U, rref, A_inverse, ops_string = lib.gaussian_elimination(self.ge_A, floating=True)
+        print(ops_string)
 
 
 if __name__ == '__main__':
