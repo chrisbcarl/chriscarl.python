@@ -31,6 +31,7 @@ Matrices have properties / operations:
     - Ax = b (solve for x)
 
 Updates:
+    2026-10-21 - core.math.linear_algebra_2 - not sure why int/float parsing wasn't happening correctly, weird oversight...
     2026-10-11 - core.math.linear_algebra_2 - 17:49 had a lot of fun, brute forced GE + LU + A^{-1}, not bad. Need to test edge cases for matrices, think non-square and non-invertible, etc.
     2026-10-11 - core.math.linear_algebra_2 - initial commit
 '''
@@ -131,11 +132,11 @@ def to_matrix(text):
             start, end = mo.span()
             content = line[start:end]
             dick = mo.groupdict()
-            fraction = dick['whole']
+            fraction = dick['fraction']
             if fraction:
                 row.append(float(content))
             else:
-                row.append(int(content))
+                row.append(int(content, base=0))
         if row:  # could have empty lines in between or latex code or whatever
             A.append(row)
     if not is_matrix(A):
