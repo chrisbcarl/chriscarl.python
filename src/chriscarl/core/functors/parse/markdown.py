@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-10-20 - core.functors.parse.markdown - prevent naked url from triggering inside of literals, latex, etc.
     2026-07-02 - core.functors.parse.markdown - added table_to_csv with good csv defaults for handling newlines and quotes
     2026-06-23 - core.functors.parse.markdown - disambiguated IndexError in rows_to_table
     2026-04-13 - core.functors.parse.markdown - disambiguated literals, didnt help much
@@ -373,7 +374,7 @@ def sections_to_doclets(sections, md_filepath, output_dirpath=constants.TEMP_DIR
     while sections:
         section, md_content, mo = sections.pop(0)
 
-        if section != 'comment':
+        if section not in ['comment', 'literal', 'code', 'latex']:
             for url_mo in REGEX_URL.finditer(md_content):
                 start = url_mo.start()
                 if md_content[start - 1] != '(':
