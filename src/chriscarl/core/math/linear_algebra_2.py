@@ -12,6 +12,7 @@ goals:
     - computed from first principles, not hacky web crap
     - everything is column vectors
 TODO: stretch:
+    - add LaTeX traces for all operations
     - add `fractions` support instead of floats everywhere...
     - overload regular lists support [[1],[2],[3]] + [[1],[2],[3]]
         - basically "list" has to check if self is T_MATRIX and other is T_MATRIX THEN do the op.
@@ -31,6 +32,7 @@ Matrices have properties / operations:
     - Ax = b (solve for x)
 
 Updates:
+    2026-11-08 - core.math.linear_algebra_2 - homework involved transposes, magnitudes, dot products, etc, so I got matrix multiply (row interpretation) for free, TODO: test cases
     2026-10-21 - core.math.linear_algebra_2 - not sure why int/float parsing wasn't happening correctly, weird oversight...
     2026-10-11 - core.math.linear_algebra_2 - 17:49 had a lot of fun, brute forced GE + LU + A^{-1}, not bad. Need to test edge cases for matrices, think non-square and non-invertible, etc.
     2026-10-11 - core.math.linear_algebra_2 - initial commit
@@ -43,6 +45,7 @@ import sys
 import logging
 from typing import List, Sequence, Union, Any, Tuple, Callable
 import re
+import math
 
 # third party imports
 
@@ -82,9 +85,8 @@ def is_vector(*v):
             isinstance_raise(vector, T_MATRIX)
         except TypeError:
             return False
-        for row in vector:
-            if len(row) != 1:
-                return False
+        if len(vector) != 1:
+            return False
     return True
 
 
@@ -181,7 +183,7 @@ def to_str(A, padding=' '):
     return text
 
 
-def create(m, n, val=lambda m, n: 0):
+def create(m, n, val=lambda i, j: 0):
     # type: (int, int, int|float|Callable[[int, int], int|float]) -> T_MATRIX
     r'''
     Description:
@@ -351,6 +353,9 @@ def gaussian_elimination(A, floating=False, ops_as_latex=True):
             -3 -1 2     0  1  0     0   1   1       3   2   0
             -2 1  2     0  0  1     0   0   -2      -10 -8  2
 
+        >>> P, L, U, rref, A_inverse, ops_string = gaussian_elimination([[2, 1, -1], [-3, -1, 2], [-2, 1, 2]])
+        ... print(to_string(P))
+
     Arguments:
         A: T_MATRIX
         floating: bool = False
@@ -360,6 +365,7 @@ def gaussian_elimination(A, floating=False, ops_as_latex=True):
             in the operations report, output as latex or as simple string?
     Returns:
         T_MATRIX
+            P, L, U, rref, A_inverse, ops_string
             Tuple[T_MATRIX, T_MATRIX, T_MATRIX, T_MATRIX, T_MATRIX, str]
                 - $P$: permutation matrix
                 - $L$: lower triangle
@@ -538,3 +544,221 @@ def gaussian_elimination(A, floating=False, ops_as_latex=True):
     # - elementary matrixes
     #     - LU decomp
     # - Ax = b (solve for x)
+
+
+def try_equal_dimmensions(u_A, w_B):
+    # type: (T_MATRIX, T_MATRIX) -> Tuple[int, int, int, int]
+    m0, n0 = dimensions(u_A)
+    m1, n1 = dimensions(w_B)
+    if not (m0 == m1 and n0 == n1):
+        raise ValueError(f'u or A, w or B must be equal dimensions! ${m0} \\times {n0} != {m1} \\times {n1}$')
+    return (m0, n0, m1, n1)
+
+
+def dot_product(u_A, w_B):
+    # type: (T_MATRIX, T_MATRIX) -> float|int
+    r'''
+    For vectors: Dot Product
+    $$
+    u, v \in \mathbb{R}^{1 \times n} \\
+    \mathbf{u} \cdot \mathbf{w} = \displaystyle\sum_{j=1}^{n} u_j \cdot w_j \in \mathbb{R}^{1 \times 1}
+    $$
+
+    For matrices: Frobenius Inner Product
+    $$
+    A, B \in \mathbb{R}^{m \times n} \\
+    \langle A, B \rangle_{\text{F}} = \displaystyle\sum_{i=1}^{n} \displaystyle\sum_{j=1}^{n} u_j \cdot w_j \in \mathbb{R}^{1 \times 1}
+    $$
+
+    Geometric Meaning: product of a and b's magnitude with their angle cosine
+    '''
+    m0, n0, _, _ = try_equal_dimmensions(u_A, w_B)
+    acc = sum(u_A[i][j] * w_B[i][j] for i in range(m0) for j in range(n0))
+    return acc
+
+
+frobenius_inner_product = dot_product
+
+
+def l2_norm(s_v_A):
+    # type: (float|int|T_MATRIX) -> float|int
+    r'''
+    L2 Norm or Magnitude (Scalar):
+    $$
+    s \in \mathbb{R}^{1 \times 1} \\
+    \Vert s \Vert = \vert s \vert = \abs{s} \in \mathbb{R}^{1 \times 1} \\
+    $$
+
+    L2 Norm or Magnitude (Vector):
+    $$
+    \mathbf{v} \in \mathbb{R}^{1 \times d} \cup \mathbb{R}^{d\times 1} \\
+    \Vert v \Vert_{2} = \sqrt{ \displaystyle\sum_{k=1}^{d} v_{k}^2 } \\
+    \Vert v \Vert_{2} = \sqrt{ \mathbf{v} \cdot \mathbf{v} } \\
+    $$
+
+    Frobenius L2 Norm (Matrix):
+    $$
+    \mathbf{A} \in \mathbb{R}^{m \times n} \\
+    \Vert A \Vert_{\text{F}} = \sqrt{ \displaystyle\sum_{i=1}^{m} \displaystyle\sum_{j=1}^{n} A_{ij}^2 } \\
+    \Vert A \Vert_{\text{F}} = \sqrt{ \langle A, A \rangle_{\text{F}} } \\
+    $$
+    '''
+    if isinstance(s_v_A, (int, float)):
+        return abs(s_v_A)
+    m, n = dimensions(s_v_A)
+    acc = sum(s_v_A[i][j]**2 for i in range(m) for j in range(n))
+    return math.sqrt(acc)
+
+
+magnitude = l2_norm
+frobenius_l2_norm = l2_norm
+
+
+def normalize(v_A, apply=l2_norm):
+    # type: (T_MATRIX, Callable[[float|int|T_MATRIX], float|int]) -> T_MATRIX
+    r'''
+    Normalization: apply a normative process on an object, scaling it
+    $$
+    v_{\text{L2 norm}} = \dfrac{1}{\Vert v \Vert_{2}} A, \Vert v_{\text{norm}} \Vert = 1 \\
+    A_{\text{L2 norm}} = \dfrac{1}{\Vert A \Vert_{\text{F}}} A, \Vert A_{\text{norm}} \Vert = 1 \\
+    $$
+    '''
+    norm = apply(v_A)
+    return scale(v_A, 1 / norm)
+
+
+def unit_vector(v):
+    # type: (T_MATRIX) -> T_MATRIX
+    r'''
+    L2 Normalize a vector : make that normed vector's L2 norm == 1
+    $$
+    v \ne \vec{0}\\
+    u = \dfrac{1}{\Vert v \Vert_{2}} v, \Vert u \Vert = 1 \\
+    $$
+    '''
+    m, n = dimensions(v)
+    if not is_vector(v) and not all(v[i][j] == 0 for i in range(m) for j in range(n)):
+        raise_w_msg(v, T_MATRIX, msg='must be a non-zero vector')
+    return normalize(v, apply=l2_norm)
+
+
+def add(u_A, w_B):
+    # type: (T_MATRIX, T_MATRIX) -> T_MATRIX
+    r'''
+    L2 Norm or Magnitude (explicit vector notation):
+    $$
+    \vec{v} \in \mathbb{R}^{1 \times d} \cup \mathbb{R}^{d\times 1} \\
+    \vert \vec{v} \vert = \sqrt{\displaystyle\sum_{k=1}^{d} v_{k}} \\
+    $$
+
+    L2 Norm or Magnitude (implicit vector notation):
+    $$
+    v \in \mathbb{R}^{1 \times d} \cup \mathbb{R}^{d\times 1} \\
+    \Vert v \Vert_{2} = \sqrt{\displaystyle\sum_{k=1}^{d} v_{k}} \\
+    $$
+    '''
+    m0, n0, _, _ = try_equal_dimmensions(u_A, w_B)
+    return create(m0, n0, val=lambda i, j: u_A[i - 1][j - 1] + w_B[i - 1][j - 1])
+
+
+def angle(u_A, w_B, degrees=False):
+    # type: (T_MATRIX, T_MATRIX, bool) -> float|int
+    r'''
+    Angles Between Vectors:
+    $$
+    \cos(\theta) = \dfrac{\mathbf{u} \cdot \mathbf{v}}{\Vert \mathbf{u} \Vert_{2} \Vert \mathbf{v} \Vert _2} \\
+    \theta = \arccos( \dfrac{\mathbf{u} \cdot \mathbf{v}}{\Vert \mathbf{u} \Vert_{2} \Vert \mathbf{v} \Vert _2} ) \\
+    $$
+
+    Angles Between Matrices:
+    $$
+    \cos(\theta) = \dfrac{\langle A, B \rangle_{\text{F}}}{\Vert A\Vert_{\text{F}} \Vert B\Vert_{\text{F}}} = \dfrac{\operatorname{tr}(A^\top B)}{\sqrt{\operatorname{tr}(A^\top A)} \sqrt{\operatorname{tr}(B^\top B)}} \\
+    \theta = \arccos( \dfrac{\langle A, B \rangle_{\text{F}}}{\Vert A\Vert_{\text{F}} \Vert B\Vert_{\text{F}}} ) \\
+    $$
+    '''
+    try_equal_dimmensions(u_A, w_B)
+    numerator = frobenius_inner_product(u_A, w_B)
+    denomenator = frobenius_l2_norm(u_A) * frobenius_l2_norm(w_B)
+    cos_theta = numerator / denomenator
+    theta = math.acos(cos_theta)
+    if degrees:
+        return theta * 180 / math.pi
+    return theta
+
+
+def transpose(v_A):
+    # type: (T_MATRIX) -> T_MATRIX
+    r'''
+    Transpose: "swap rows and columns"
+    NOTE: In the definition, note the "for all i in n" (typically i in m)
+    $$
+    A \in \mathbb{m \times n}, A^\top \in \mathbb{n \times m} \\
+    (A^\top)_{ij} = A_{ji} \forall i \in [n], j \in [m]
+    $$
+    '''
+    m, n = dimensions(v_A)
+    return create(n, m, val=lambda i, j: v_A[j - 1][i - 1])
+
+
+def column_at(A, j):
+    # type: (T_MATRIX, int) -> T_MATRIX
+    r'''
+    1-indexed, column of a matrix at col j
+    '''
+    m, n = dimensions(A)
+    return create(m, 1, val=lambda i, _: A[i - 1][j - 1])
+
+
+def columns(A):
+    # type: (T_MATRIX) -> Sequence[T_MATRIX]
+    r'''
+    Return the columns of a matrix, useful for linear combinations.
+    '''
+    cols = []
+    m, n = dimensions(A)
+    for j in range(n):
+        col = create(m, 1, val=lambda i, _: A[i - 1][j])
+        cols.append(col)
+    return cols
+
+
+def row_at(A, i):
+    # type: (T_MATRIX, int) -> T_MATRIX
+    r'''
+    1-indexed, row of a matrix at col i
+    '''
+    m, n = dimensions(A)
+    return create(1, n, val=lambda _, j: A[i - 1][j - 1])
+
+
+def rows(A):
+    # type: (T_MATRIX) -> Sequence[T_MATRIX]
+    r'''
+    Return the columns of a matrix, useful for ???.
+    '''
+    rows = []
+    m, n = dimensions(A)
+    for i in range(m):
+        row = create(1, n, val=lambda _, j: A[i][j - 1])
+        rows.append(row)
+    return rows
+
+
+def matrix_multiply(A, B, interpretation='row'):
+    # type: (T_MATRIX, T_MATRIX, str) -> T_MATRIX
+    r'''
+    Row interpretation, dot products: each element is the dot product of that ith row and jth column
+    $$
+    A \in \mathbb{R}^{m \times n}, B \in \mathbb{R}^{n \times d}, C = AB \in \mathbb{R}^{m \times d} \\
+    C_{ij} = (A_{ik} \forall k \in [n]) \cdot (B_{kj} \forall k \in [m]) \\
+    C_{ij} = A_{i,:} \cdot B_{:,j} = \displaystyle\sum_{k=1}^{n} A_{ik} \times B_{kj} \\
+    $$
+    '''
+    (m0, n0), (m1, n1) = dimensions(A), dimensions(B)
+    if not is_multipliable(A, B):
+        raise ValueError(f'A is not multipliable with B! ${m0} \\times {n0} \ne {m1} \\times {n1}$')
+    if interpretation == 'row':
+        C = create(m0, n1, lambda i, j: dot_product(transpose(row_at(A, i)), column_at(B, j)))
+        return C
+    # TODO: linear combinations for column interpretation
+    raise NotImplementedError()

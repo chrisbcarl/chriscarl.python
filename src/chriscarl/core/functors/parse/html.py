@@ -315,6 +315,7 @@ HTML_TEMPLATE_TABLE = '''<table>
     </tbody>
 </table>'''
 
+
 def rows_to_html(rows, aligned='left', ordered=False, minify=True, indent=4):
     # type: (List[dict], str, bool, bool, int) -> str
     '''
@@ -354,6 +355,7 @@ def rows_to_html(rows, aligned='left', ordered=False, minify=True, indent=4):
     render = HTML_TEMPLATE_TABLE.format(ths=ths, trs='\n'.join(trs))
     return render
 
+
 HTML5_TEMPLATE = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -365,6 +367,7 @@ HTML5_TEMPLATE = '''<!DOCTYPE html>
 {content}
 </body>
 </html>'''
+
 
 def html5(html):
     # type: (str) -> str
