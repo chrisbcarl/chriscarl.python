@@ -10,6 +10,7 @@ core.functors.parse.markdown is functors that can work with markdown text direct
 core.functor are modules that functions that are usually defined as lambdas, but i like to hold onto them as named funcs. non-self-referential, low-import, etc.
 
 Updates:
+    2026-11-12 - core.functors.parse.markdown - rows_to_table slightly better exception messaging
     2026-10-20 - core.functors.parse.markdown - prevent naked url from triggering inside of literals, latex, etc.
     2026-07-02 - core.functors.parse.markdown - added table_to_csv with good csv defaults for handling newlines and quotes
     2026-06-23 - core.functors.parse.markdown - disambiguated IndexError in rows_to_table
@@ -112,7 +113,16 @@ def rows_to_table(rows, pretty=True):
                     raise Exception(f"row {r} has {len(row)} cols, expected {cols}!") from ie
             fmt_cols.append('{:%ss}' % maxcollen)
 
-    out = '\n'.join(f'|{"|".join(fmt_cols[col].format(cell) for col, cell in enumerate(row))}|' for row in rows)
+    tokens = []
+    for r, row in enumerate(rows):
+        token = []
+        for col, cell in enumerate(row):
+            try:
+                token.append(fmt_cols[col].format(cell))
+            except IndexError as ie:
+                raise Exception(f"row {r} has {len(row)} cols, expected {cols}!") from ie
+        tokens.append(f'|{"|".join(token)}|')
+    out = '\n'.join(tokens)
     return out
 
 
