@@ -11,7 +11,8 @@ goals:
     - markdown first documentation
     - computed from first principles, not hacky web crap
     - everything is column vectors
-TODO: stretch:
+TODO:
+    - to_str should justify all of the values... otherwise you get weird stuff with negatives, looks whack
     - add LaTeX traces for all operations
     - add `fractions` support instead of floats everywhere...
     - overload regular lists support [[1],[2],[3]] + [[1],[2],[3]]
@@ -32,6 +33,7 @@ Matrices have properties / operations:
     - Ax = b (solve for x)
 
 Updates:
+    2026-11-16 - core.math.linear_algebra_2 - added project, modified add to use a variadic list
     2026-11-08 - core.math.linear_algebra_2 - homework involved transposes, magnitudes, dot products, etc, so I got matrix multiply (row interpretation) for free, TODO: test cases
     2026-10-21 - core.math.linear_algebra_2 - not sure why int/float parsing wasn't happening correctly, weird oversight...
     2026-10-11 - core.math.linear_algebra_2 - 17:49 had a lot of fun, brute forced GE + LU + A^{-1}, not bad. Need to test edge cases for matrices, think non-square and non-invertible, etc.
@@ -46,6 +48,7 @@ import logging
 from typing import List, Sequence, Union, Any, Tuple, Callable
 import re
 import math
+from itertools import combinations
 
 # third party imports
 
@@ -546,13 +549,14 @@ def gaussian_elimination(A, floating=False, ops_as_latex=True):
     # - Ax = b (solve for x)
 
 
-def try_equal_dimmensions(u_A, w_B):
-    # type: (T_MATRIX, T_MATRIX) -> Tuple[int, int, int, int]
-    m0, n0 = dimensions(u_A)
-    m1, n1 = dimensions(w_B)
-    if not (m0 == m1 and n0 == n1):
-        raise ValueError(f'u or A, w or B must be equal dimensions! ${m0} \\times {n0} != {m1} \\times {n1}$')
-    return (m0, n0, m1, n1)
+def try_equal_dimmensions(*vec_or_Mat):
+    # type: (T_MATRIX) -> Tuple[int, int]
+    m0, n0 = dimensions(vec_or_Mat[0])
+    for i in range(1, len(vec_or_Mat)):
+        m1, n1 = dimensions(vec_or_Mat[i])
+        if not (m0 == m1 and n0 == n1):
+            raise ValueError(f'vectors or Matrices must be equal dimensions! the {i}-th object isnt! ${m0} \\times {n0} != {m1} \\times {n1}$')
+    return m0, n0
 
 
 def dot_product(u_A, w_B):
@@ -572,7 +576,7 @@ def dot_product(u_A, w_B):
 
     Geometric Meaning: product of a and b's magnitude with their angle cosine
     '''
-    m0, n0, _, _ = try_equal_dimmensions(u_A, w_B)
+    m0, n0 = try_equal_dimmensions(u_A, w_B)
     acc = sum(u_A[i][j] * w_B[i][j] for i in range(m0) for j in range(n0))
     return acc
 
@@ -642,8 +646,8 @@ def unit_vector(v):
     return normalize(v, apply=l2_norm)
 
 
-def add(u_A, w_B):
-    # type: (T_MATRIX, T_MATRIX) -> T_MATRIX
+def add(*vec_or_Mat):
+    # type: (T_MATRIX) -> T_MATRIX
     r'''
     L2 Norm or Magnitude (explicit vector notation):
     $$
@@ -657,8 +661,8 @@ def add(u_A, w_B):
     \Vert v \Vert_{2} = \sqrt{\displaystyle\sum_{k=1}^{d} v_{k}} \\
     $$
     '''
-    m0, n0, _, _ = try_equal_dimmensions(u_A, w_B)
-    return create(m0, n0, val=lambda i, j: u_A[i - 1][j - 1] + w_B[i - 1][j - 1])
+    m0, n0 = try_equal_dimmensions(*vec_or_Mat)
+    return create(m0, n0, val=lambda i, j: sum(vec_or_Mat[k][i - 1][j - 1] + vec_or_Mat[k][i - 1][j - 1] for k in range(len(vec_or_Mat))))
 
 
 def angle(u_A, w_B, degrees=False):
@@ -764,25 +768,45 @@ def matrix_multiply(A, B, interpretation='row'):
     raise NotImplementedError()
 
 
-def project(V, b):
-    m0, n0 = la.dimensions(V)
-    m1, n1 = la.dimensions(b)
+def project(b, V):
+    # type: (T_MATRIX, T_MATRIX) -> T_MATRIX
+    r'''
+    Projection of vector b onto some orthonormal subspace V is very straightforward.
+        Abuse the properties of orthogonality and add the components up via
+        a linear combination.
+
+    $$
+    \begin{aligned}
+    \underset{m \times 1}{\vec{b}} &, \underset{m \times n}{\mathcal{V}} = \operatorname{span} \{ v_1, v_2, \cdots, v_n \} \\
+    \forall_{k, l \in [m], k \ne l} & V_{k} \perp V_{l} : V_{k} \cdot V_{l} = 0  \\
+    C_{j} &= \dfrac{b \cdot v_{j}}{\Vert v_{j} \Vert_{2}^{2}} = \dfrac{b \cdot v_{j}}{v_{j} \cdot v_{j}} v_{j} \\
+    \hat{b} &= \displaystyle\sum_{j=1}^{n} C_{j} v_{j} = \displaystyle\sum_{j=1}^{n}\dfrac{b \cdot v_{j}}{\Vert v_{j} \Vert_{2}^{2}} v_{j} = \displaystyle\sum_{j=1}^{n} \dfrac{b \cdot v_{j}}{v_{j} \cdot v_{j}} v_{j} \\
+    &= C_1 v_1 + C_2 v_2 + \cdots C_n v_n \\
+    \hat{b} &= \operatorname{\text{Proj}}_{\mathcal{V}} \vec{b} \\
+    \end{aligned}
+    $$
+    '''
+    m0, n0 = dimensions(V)
+    m1, _ = dimensions(b)
     if m0 != m1:
-        raise ValueError(f'rows have to match, ${m0} \\ne {m1}$!')
+        raise ValueError(f'row count has to match to project b onto V, ${m0} \\ne {m1}$!')
+
+    # check orthonormality of subspace
+    for k, l in combinations(range(n0), 2):  # [(0,1), (0,2), (1,2)]
+        dp = dot_product(column_at(V, k), column_at(V, l))
+        if dp != 0:
+            raise ValueError(f'V is not an orthonormal subspace! $v_{k} \\cdot v_{l} \\ne 0$!')
+
     if n0 == 1:
         # vector b onto subspace 1D V projection
-        P = la.scale( la.matrix_multiply(V, la.transpose(V)) , 1 / la.dot_product(V, V) )
-        return la.matrix_multiply(P, b)
+        P = scale(matrix_multiply(V, transpose(V)), 1 / dot_product(V, V))
+        return matrix_multiply(P, b)
     else:
         # vector b onto subspace 2D+ V projection (assuming V is an orthonormal basis)
-        linear_combination = []
+        components = []
         for j in range(n0):
-            v_j = la.column_at(V, j)
-            C_i = la.dot_product(v_j, b) / la.l2_norm(v_j) **2
-            C_i_v_j = la.scale(v_j, C_i)
-            linear_combination.append(C_i_v_j)
-        return la.add(*linear_combination)
-
-
-TODO: modify add to be a list of stuff to add together
-TODO: la.to_str should justify all of the values... otherwise you get weird stuff with negatives, looks whack
+            v_j = column_at(V, j)
+            C_i = dot_product(v_j, b) / l2_norm(v_j)**2
+            C_i_v_j = scale(v_j, C_i)
+            components.append(C_i_v_j)
+        return add(*components)  # linear combination of the components
