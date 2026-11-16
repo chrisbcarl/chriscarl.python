@@ -762,3 +762,27 @@ def matrix_multiply(A, B, interpretation='row'):
         return C
     # TODO: linear combinations for column interpretation
     raise NotImplementedError()
+
+
+def project(V, b):
+    m0, n0 = la.dimensions(V)
+    m1, n1 = la.dimensions(b)
+    if m0 != m1:
+        raise ValueError(f'rows have to match, ${m0} \\ne {m1}$!')
+    if n0 == 1:
+        # vector b onto subspace 1D V projection
+        P = la.scale( la.matrix_multiply(V, la.transpose(V)) , 1 / la.dot_product(V, V) )
+        return la.matrix_multiply(P, b)
+    else:
+        # vector b onto subspace 2D+ V projection (assuming V is an orthonormal basis)
+        linear_combination = []
+        for j in range(n0):
+            v_j = la.column_at(V, j)
+            C_i = la.dot_product(v_j, b) / la.l2_norm(v_j) **2
+            C_i_v_j = la.scale(v_j, C_i)
+            linear_combination.append(C_i_v_j)
+        return la.add(*linear_combination)
+
+
+TODO: modify add to be a list of stuff to add together
+TODO: la.to_str should justify all of the values... otherwise you get weird stuff with negatives, looks whack
